@@ -81,8 +81,8 @@ function prepareModel(source: THREE.Group) {
       catalog.allPbr.push(material);
       material.envMapIntensity = 1.25;
       const name = material.name.toLowerCase();
-      if (/^paint [12]( |$)/.test(name) && material instanceof THREE.MeshPhysicalMaterial) catalog.paint.push(material);
-      if (name.includes("glass") || name.includes("mirror")) catalog.glass.push(material);
+      if (/^paint [12]( |$)/.test(name) && material instanceof THREE.MeshPhysicalMaterial) { material.roughnessMap = null; catalog.paint.push(material); }
+      if (name.includes("glass") || name.includes("mirror")) { material.roughnessMap = null; catalog.glass.push(material); }
       if (/interior|dashboard|floormat|panel sides/.test(name)) catalog.interior.push(material);
       if (name === "brake") catalog.brakes.push(material);
       if (name.includes("rim")) catalog.rims.push(material);
@@ -108,7 +108,8 @@ function prepareModel(source: THREE.Group) {
   root.traverse(object => {
     if (/^Wheel(Front|Rear)[LR]$/.test(object.name)) {
       if (object.name.startsWith("WheelFront")) object.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.PI/6));
-      wheels.push(object);
+      // Calipers stay fixed; only tire, rim and brake disc rotate on the axle.
+      wheels.push(...object.children.filter(child => !/BrakePad/.test(child.name)));
     }
   });
   return { root, catalog, wheels };
@@ -173,17 +174,19 @@ export default function Car() {
       const target = index % 2 ? paintColor.clone().multiplyScalar(0.82) : paintColor;
       material.color.lerp(target, 0.055);
       material.metalness = damp(material.metalness, THREE.MathUtils.lerp(paint.metal, finish.metal, 0.48), 4, dtc);
-      material.roughness = damp(material.roughness, THREE.MathUtils.lerp(paint.rough, finish.rough, 0.55), 4, dtc);
-      material.clearcoat = damp(material.clearcoat, THREE.MathUtils.lerp(paint.clear, finish.clear, 0.58), 4, dtc);
-      material.clearcoatRoughness = damp(material.clearcoatRoughness, finish.id === "satin" ? 0.28 : 0.06, 4, dtc);
+      material.roughness = damp(material.roughness, Math.max(0.36, THREE.MathUtils.lerp(paint.rough, finish.rough, 0.55)), 4, dtc);
+      material.clearcoat = damp(material.clearcoat, Math.min(0.4, THREE.MathUtils.lerp(paint.clear, finish.clear, 0.58)), 4, dtc);
+      material.clearcoatRoughness = damp(material.clearcoatRoughness, finish.id === "satin" ? 0.42 : 0.3, 4, dtc);
       material.opacity = damp(material.opacity, 1 - ghost * 0.84, 5, dtc);
       material.transparent = material.opacity < 0.995;
       material.depthWrite = material.opacity > 0.65;
-      material.envMapIntensity = damp(material.envMapIntensity, lightTheme ? 1.85 : 1.22, 3, dtc);
+      material.envMapIntensity = damp(material.envMapIntensity, lightTheme ? 0.65 : 0.8, 3, dtc);
     });
 
     prepared.catalog.glass.forEach((material) => {
-      material.envMapIntensity = damp(material.envMapIntensity, lightTheme ? 1.95 : 1.35, 3, dtc);
+      material.envMapIntensity = damp(material.envMapIntensity, lightTheme ? 0.4 : 0.6, 3, dtc);
+      material.roughness = damp(material.roughness, 0.38, 3, dtc);
+      if (material instanceof THREE.MeshPhysicalMaterial) { material.clearcoat = 0; material.specularIntensity = 0.16; }
       material.opacity = damp(material.opacity, 1 - ghost * 0.2, 4, dtc);
     });
     prepared.catalog.interior.forEach((material, index) => {
@@ -243,7 +246,11 @@ export default function Car() {
     car.position.y = damp(car.position.y, portrait && ch === -1 ? -0.04 : 0, 3, dtc);
     if (runtime.driving && !runtime.reduced) {
       car.position.y += Math.sin(state.clock.elapsedTime * 5) * 0.003 * Math.min(runtime.speed / 80, 1);
-      prepared.wheels.forEach(w => w.rotateX(-runtime.speed / 3.6 / 0.36 * dtc));
+    }
+    if (!runtime.reduced) {
+      const demo = explore && useExperience.getState().showroomWheels;
+      const wheelSpeed = runtime.driving ? runtime.speed / 3.6 / 0.36 : demo ? 1.65 : 0;
+      prepared.wheels.forEach(w => w.rotateX(-wheelSpeed * dtc));
     }
     car.rotation.y = runtime.reduced || interactive ? 0 : runtime.pointer.x * 0.018 * (1 - finale);
     car.rotation.x = runtime.reduced || interactive ? 0 : runtime.pointer.y * 0.006;

@@ -23,6 +23,9 @@ const PIN_POSITIONS = [
 
 export default function ExploreVehicle() {
   const open = useExperience((s) => s.exploreOpen);
+  const rolling = useExperience(s => s.showroomWheels);
+  const setRolling = useExperience(s => s.setShowroomWheels);
+  const reduced = useExperience(s => s.reducedMotion);
   const active = useExperience((s) => s.activeHotspot);
   const setExplore = useExperience((s) => s.setExplore);
   const setHotspot = useExperience((s) => s.setHotspot);
@@ -31,7 +34,7 @@ export default function ExploreVehicle() {
 
   useEffect(() => {
     if (!open) return;
-    setPinsVisible(true);
+    setPinsVisible(window.innerWidth >= 768);
     const previousOverflow = document.documentElement.style.overflow;
     document.documentElement.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
@@ -40,10 +43,14 @@ export default function ExploreVehicle() {
         setHotspot(null);
       }
     };
+    const pinsTimer = window.setInterval(() => {
+      if (performance.now() - vehicleCamera.lastInput > 3100) setPinsVisible(false);
+    }, 500);
     window.addEventListener("keydown", onKey);
     return () => {
       document.documentElement.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKey);
+      window.clearInterval(pinsTimer);
     };
   }, [open, setExplore, setHotspot]);
 
@@ -104,8 +111,8 @@ export default function ExploreVehicle() {
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[22] flex items-start justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-10 sm:pt-7">
         <div className="explore-chrome pointer-events-auto max-w-[230px] border border-white/20 bg-black/30 px-4 py-3 backdrop-blur-sm sm:max-w-none">
-          <p className="font-mono-tech text-[12px] tracking-[0.35em] text-ion">AERION ONE / LIVE STUDIO</p>
-          <p className="mt-1.5 font-display text-sm font-bold tracking-wide">EXPLORE VEHICLE — 360°</p>
+          <p className="font-mono-tech text-[12px] tracking-[0.35em] text-ion">AERION ONE / SHOWROOM</p>
+          <p className="mt-1.5 font-display text-sm font-bold tracking-wide">CONCESIONARIO — 360°</p>
         </div>
         <button
           onClick={() => { setExplore(false); setHotspot(null); }}
@@ -143,8 +150,13 @@ export default function ExploreVehicle() {
             </button>
           ))}
         </div>
+        <div className="pointer-events-auto mt-2 flex justify-center">
+          <button onClick={() => setRolling(!rolling)} disabled={reduced} aria-pressed={rolling && !reduced} className="bg-[#081018]/95 px-4 py-2 text-sm text-white transition-colors hover:bg-[#18313b] disabled:opacity-60" data-cursor>
+            {reduced ? "Llantas detenidas · movimiento reducido" : rolling ? "Pausar llantas" : "Activar llantas"}
+          </button>
+        </div>
         <p className="pointer-events-none mt-3 text-center font-mono-tech text-[12px] tracking-[0.28em] text-white/70 sm:text-[12px]">
-          DRAG TO ROTATE · SCROLL OR PINCH TO ZOOM · AUTO-ORBIT AFTER 3 SECONDS
+          ARRASTRA PARA GIRAR · SCROLL PARA ACERCAR
         </p>
       </div>
 

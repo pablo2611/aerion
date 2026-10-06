@@ -53,9 +53,12 @@ function AudioToggle() {
 }
 
 export default function Nav() {
+  const exploring = useExperience(s => s.exploreOpen);
   const phase = useExperience((s) => s.phase);
   const menuOpen = useExperience((s) => s.menuOpen);
   const setMenu = useExperience((s) => s.setMenu);
+
+  if (exploring) return null;
 
   const go = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: prefersReduced() ? "auto" : "smooth" });

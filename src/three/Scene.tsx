@@ -6,6 +6,7 @@ import { EffectComposer, Bloom, Vignette, ChromaticAberration, SMAA } from "@rea
 import { runtime, useExperience, DPR, vehicleCamera } from "../store";
 import Car from "./Car";
 import Road from "./Road";
+import Showroom from "./Showroom";
 import { SIGNATURES } from "../data/content";
 import { AirFlow, EnergyFlow, HoloField } from "./Particles";
 import { FLOOR } from "./shaders";
@@ -16,7 +17,7 @@ const { damp, clamp, lerp, smoothstep } = THREE.MathUtils;
 
 const THEME = {
   hero: { bg: "#080e18", floor: "#080b10", near: 8, far: 25, pool: 0.55, grid: 0.5, contact: 0.9, env: 1.0, exp: 1.08 },
-  light: { bg: "#ebebe7", floor: "#d8d8d2", near: 19, far: 70, pool: 0.14, grid: 0.55, contact: 0.45, env: 1.7, exp: 1.12 },
+  light: { bg: "#aaa99f", floor: "#aaa99f", near: 20, far: 70, pool: 0, grid: 0, contact: 0.45, env: 0.85, exp: 0.98 },
   dark: { bg: "#05070b", floor: "#0a0d12", near: 11, far: 42, pool: 0.5, grid: 0.6, contact: 0.85, env: 0.95, exp: 1.0 },
   night: { bg: "#03040a", floor: "#05060d", near: 6.5, far: 24, pool: 0.8, grid: 0.28, contact: 1.0, env: 0.45, exp: 0.95 },
 };
@@ -151,7 +152,8 @@ function Rig() {
       v.focus.y = damp(v.focus.y, v.targetFocus.y, 4.2, dtc);
       v.focus.z = damp(v.focus.z, v.targetFocus.z, 4.2, dtc);
       const cp = Math.cos(v.pitch);
-      const radius = v.radius * (configOrbit ? 1.28 : 1);
+      const portrait = size.width / size.height < 0.78;
+      const radius = v.radius * (configOrbit ? 1.28 : 1) * (portrait ? configOrbit ? 1.35 : 1.75 : 1);
       targetPos = new THREE.Vector3(
         v.focus.x + Math.cos(v.yaw) * cp * radius,
         v.focus.y + Math.sin(v.pitch) * radius,
@@ -193,7 +195,7 @@ function Rig() {
   return quality === "LOW" ? null : (
     <EffectComposer multisampling={0}>
       {quality === "HIGH" && <SMAA />}
-      <Bloom mipmapBlur intensity={quality === "HIGH" ? 0.72 : 0.48} luminanceThreshold={0.78} luminanceSmoothing={0.28} />
+      <Bloom mipmapBlur intensity={quality === "HIGH" ? 0.3 : 0.2} luminanceThreshold={1.25} luminanceSmoothing={0.28} />
       {quality === "HIGH" && <ChromaticAberration ref={caRef} />}
       <Vignette eskil={false} offset={0.26} darkness={0.62} />
     </EffectComposer>
@@ -203,6 +205,7 @@ function Rig() {
 /* ------------------------ stage / atmosphere ----------------------- */
 
 function Stage() {
+  const exploring = useExperience(s => s.exploreOpen);
   const isConfig = useExperience(s => s.phase === "configurator");
   const signature = useExperience(s => s.config.signature);
   const signatureColor = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
@@ -238,7 +241,8 @@ function Stage() {
 
   useFrame((_, dt) => {
     const dtc = Math.min(dt, 0.05);
-    const th = runtime.driving ? { ...themeBlend(-1,0), bg:["#8fa8af","#8fa8af",0] as const, near:22,far:78,env:1.8,exp:1.1 } : themeBlend(runtime.chapter, runtime.local);
+    const showroom = useExperience.getState().exploreOpen && !runtime.driving;
+    const th = showroom ? themeBlend(7, 0) : runtime.driving ? { ...themeBlend(-1,0), bg:["#8fa8af","#8fa8af",0] as const, near:22,far:78,env:1.8,exp:1.1 } : themeBlend(runtime.chapter, runtime.local);
     bg.lerp(new THREE.Color(th.bg[2] ? th.bg[1] : th.bg[0]), 0.06);
     (scene.background as THREE.Color).copy(bg);
     fog.color.copy(bg);
@@ -258,27 +262,26 @@ function Stage() {
       u.uRoad.value = damp(u.uRoad.value,runtime.driving ? 1 : 0,4,dtc);
       if (!runtime.reduced) u.uDistance.value += runtime.speed / 3.6 * dtc;
     }
-    if (keyLight.current) keyLight.current.intensity = damp(keyLight.current.intensity, th.env * 1.1, 2.5, dtc);
-    if (ambLight.current) ambLight.current.intensity = damp(ambLight.current.intensity, 0.25 + th.env * 0.35, 2.5, dtc);
+    if (keyLight.current) keyLight.current.intensity = damp(keyLight.current.intensity, th.env * 0.4, 2.5, dtc);
+    if (ambLight.current) ambLight.current.intensity = damp(ambLight.current.intensity, 0.55 + th.env * 0.45, 2.5, dtc);
   });
 
   return (
     <>
       <ambientLight ref={ambLight} intensity={0.5} color="#c7d9ea" />
       <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-6, 3.5, -5]} intensity={0.72} color={isConfig ? "#ffffff" : "#7fd4ff"} />
-      <directionalLight position={[1, 1.4, -8]} intensity={0.42} color="#ffbfa7" />
-      <pointLight position={[0, 1.2, 4]} intensity={0.5} color={isConfig ? "#ffffff" : "#bfe9ff"} distance={12} />
-      <pointLight position={[2.8, 0.65, 0]} intensity={3.5} color={signatureColor} distance={5} decay={2} />
+      <directionalLight position={[-6, 3.5, -5]} intensity={0.35} color={isConfig ? "#ffffff" : "#7fd4ff"} />
+      <directionalLight position={[1, 1.4, -8]} intensity={0.22} color="#ffbfa7" />
+      <pointLight position={[2.8, 0.65, 0]} intensity={0.18} color={signatureColor} distance={5} decay={2} />
       {/* Long studio strips reveal roof, shoulder and the wheel crowns in dark chapters. */}
-      <rectAreaLight position={[0.2, 5, 1.8]} rotation={[-Math.PI / 2.8, 0, 0]} width={7.5} height={1.1} intensity={5.5} color="#e8f4ff" />
-      <rectAreaLight position={[0, 2.2, -5.8]} rotation={[0, Math.PI, 0]} width={6.8} height={0.45} intensity={3.2} color={isConfig ? "#fff7ec" : "#78dfff"} />
-      <rectAreaLight position={[5.7, 1.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={4.5} height={0.7} intensity={2.2} color="#c5ecff" />
+      <rectAreaLight position={[0.2, 5, 1.8]} rotation={[-Math.PI / 2.8, 0, 0]} width={9} height={5} intensity={0.9} color="#e8f4ff" />
+      <rectAreaLight position={[0, 2.2, -5.8]} rotation={[0, Math.PI, 0]} width={7} height={3} intensity={0.55} color={isConfig ? "#fff7ec" : "#78dfff"} />
+      <rectAreaLight position={[5.7, 1.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={5} height={4} intensity={0.45} color="#c5ecff" />
       <Environment resolution={quality === "LOW" ? 64 : 128} frames={1}>
-        <Lightformer intensity={2.8} position={[0, 4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[9, 3, 1]} color="#ffffff" />
-        <Lightformer intensity={1.1} position={[-8, 2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[6, 1.2, 1]} color="#cfe8ff" />
-        <Lightformer intensity={0.9} position={[8, 1.6, 0]} rotation={[0, -Math.PI / 2, 0]} scale={[5, 0.8, 1]} color="#ffe9d8" />
-        <Lightformer intensity={0.5} position={[0, 1, -9]} scale={[7, 0.5, 1]} color="#5fe8ff" />
+        <Lightformer intensity={0.65} position={[0, 4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 8, 1]} color="#d7dedb" />
+        <Lightformer intensity={0.45} position={[-8, 2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[6, 1.2, 1]} color="#cfe8ff" />
+        <Lightformer intensity={0.35} position={[8, 1.6, 0]} rotation={[0, -Math.PI / 2, 0]} scale={[5, 0.8, 1]} color="#ffe9d8" />
+        <Lightformer intensity={0.2} position={[0, 1, -9]} scale={[7, 0.5, 1]} color="#5fe8ff" />
       </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
         <planeGeometry args={[80, 80]} />
@@ -287,10 +290,13 @@ function Stage() {
       <Suspense fallback={null}>
         <Car />
       </Suspense>
-      <AirFlow />
+      <Showroom />
       <Road />
-      <EnergyFlow />
-      <HoloField />
+      <group visible={!exploring}>
+        <AirFlow />
+        <EnergyFlow />
+        <HoloField />
+      </group>
     </>
   );
 }

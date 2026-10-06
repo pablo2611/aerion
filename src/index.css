@@ -530,8 +530,8 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .voice-panel { margin-top:16px; }
 @media(max-width:767px){ .ai-experience { min-height:900px; overflow-y:auto; } .drive-panel {padding:14px;} }
 
-.cursor-ring{width:48px;height:28px;border:0;border-radius:0;mix-blend-mode:normal;filter:drop-shadow(0 3px 4px #0008);}
-.cursor-dot{width:3px;height:3px;background:#fff;}
+.cursor-ring{width:24px;height:28px;border:0;border-radius:0;mix-blend-mode:normal;filter:drop-shadow(0 3px 4px #0008);}
+.cursor-dot{display:none;}
 .cursor-label{position:absolute;top:34px;left:50%;transform:translateX(-50%);padding:3px 6px;background:#07111c;color:#d5f8ff;font-size:10px;letter-spacing:.08em;}
 .cursor-label:empty{display:none;}
 .configurator-panel{z-index:25;background:#f0efea!important;backdrop-filter:none!important;}

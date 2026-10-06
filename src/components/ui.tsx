@@ -21,7 +21,7 @@ export function Cursor() {
   useEffect(() => {
     if (!finePointer() || prefersReduced()) return;
     document.documentElement.classList.add("aerion-cursor");
-    let x = innerWidth / 2, y = innerHeight / 2, rx = x, ry = y;
+    let x = innerWidth / 2, y = innerHeight / 2;
     let s = 1, ts = 1, visible = false, raf = 0;
     const onMove = (e: MouseEvent) => {
       x = e.clientX; y = e.clientY; visible = true;
@@ -32,14 +32,12 @@ export function Cursor() {
     const onLeave = () => (visible = false);
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      rx += (x - rx) * 0.16;
-      ry += (y - ry) * 0.16;
       s += (ts - s) * 0.14;
       const op = visible ? 1 : 0;
       if (dot.current)
         dot.current.style.transform = `translate3d(${x - 3}px, ${y - 3}px, 0)`;
       if (ring.current) {
-        ring.current.style.transform = `translate3d(${rx - 24}px, ${ry - 14}px, 0) scale(${s})`;
+        ring.current.style.transform = `translate3d(${x - 3}px, ${y - 2}px, 0) scale(${s})`;
         ring.current.style.opacity = String(op);
       }
       if (dot.current) dot.current.style.opacity = String(op);
@@ -59,12 +57,8 @@ export function Cursor() {
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[70] hidden md:block">
       <div ref={dot} className="cursor-dot" />
       <div ref={ring} className="cursor-ring">
-        <svg viewBox="0 0 64 36" width="48" height="28" fill="none">
-          <path d="M7 23 11 15 22 13 29 6h15l8 9 7 3v9H7z" fill="#155cc8" stroke="#c8f7ff" strokeWidth="1.5"/>
-          <path d="m25 13 6-5h11l5 6z" fill="#07111c" stroke="#5fe8ff"/>
-          <path d="M10 20h8m34 0h5" stroke="#eaffff" strokeWidth="2"/>
-          <circle cx="20" cy="27" r="6" fill="#08111c" stroke="#c8f7ff"/><circle cx="48" cy="27" r="6" fill="#08111c" stroke="#c8f7ff"/>
-          <circle cx="20" cy="27" r="2" fill="#5fe8ff"/><circle cx="48" cy="27" r="2" fill="#5fe8ff"/>
+        <svg viewBox="0 0 24 28" width="24" height="28" fill="none">
+          <path d="M3 2v20l5.8-5 4.3 9 3.8-1.9-4.2-8.6H21L3 2Z" fill="#091c29" stroke="#9be9ec" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
         <span ref={label} className="cursor-label" />
       </div>
@@ -233,7 +227,8 @@ export function Counter({
 
 export function ChapterRail() {
   const phase = useExperience((s) => s.phase);
-  if (phase === "configurator") return null;
+  const exploring = useExperience(s => s.exploreOpen);
+  if (phase === "configurator" || exploring) return null;
   return (
     <nav
       aria-label="Chapters"

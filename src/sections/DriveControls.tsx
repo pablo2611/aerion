@@ -4,6 +4,7 @@ import { runtime, useExperience } from "../store";
 import { sonic } from "../audio";
 
 export default function DriveControls() {
+  const exploring = useExperience(s => s.exploreOpen);
   const driving = useExperience(s => s.driving);
   const ready = useExperience(s => s.modelReady);
   const paint = useExperience(s => s.config.paint);
@@ -23,6 +24,7 @@ export default function DriveControls() {
     return () => { document.body.style.overflow = old; window.removeEventListener("keydown",key); clearInterval(timer); };
   },[driving]);
   useEffect(() => { runtime.targetSpeed = paused ? 0 : speed; },[speed,paused]);
+  if (exploring) return null;
   if (!driving && phase === "configurator") return null;
   if (!driving) return <button disabled={!ready} className="fixed bottom-5 right-5 z-30 btn-solid" onClick={() => { runtime.driving = true; useExperience.setState({driving:true,exploreOpen:false}); }}>Ver en carretera</button>;
   return <div className="fixed inset-0 z-[60] pointer-events-none text-white" role="region" aria-label="Experiencia en carretera">

@@ -127,6 +127,8 @@ interface ExperienceState {
   menuOpen: boolean;
   exploreOpen: boolean;
   activeHotspot: string | null;
+  showroomWheels: boolean;
+  setShowroomWheels: (rolling: boolean) => void;
   aiAction: AIAction;
   aiStage: AIStage;
   config: AeroConfig;
@@ -154,6 +156,8 @@ export const useExperience = create<ExperienceState>((set) => ({
   menuOpen: false,
   exploreOpen: false,
   activeHotspot: null,
+  showroomWheels: true,
+  setShowroomWheels: (rolling) => set({ showroomWheels: rolling }),
   aiAction: "idle",
   aiStage: "ready",
   config: { paint: "ion", finish: "mirror", wheel: "aeroblade", wheelFinish: "graphite", signature: "ion", interior: "graphite", caliper: "ion", uiTheme: "ion" },
