@@ -1,8 +1,4 @@
-/* ------------------------------------------------------------------ */
-/*  SonicCore — AERION's synthesized soundscape.                       */
-/*  No audio assets: a low electric drone + filtered wind, built      */
-/*  with WebAudio. Starts muted; toggled by the user.                 */
-/* ------------------------------------------------------------------ */
+/* SonicCore: recorded race engine, procedural electric motor and background music. */
 
 import { useExperience } from "./store";
 class SonicCore {
@@ -13,6 +9,34 @@ class SonicCore {
   private on = false;
   private pending = false;
   private driving = false;
+  engineMode: "electric" | "race" = "race";
+  private engineSource: AudioBufferSourceNode | null = null;
+  private engineGain: GainNode | null = null;
+  private engineLoad: Promise<void> | null = null;
+  private lastSpeed = 0;
+  private lastBoost = false;
+  setEngineMode(mode: "electric" | "race") {
+    this.engineMode = mode;
+    this.hum(this.lastSpeed, this.lastBoost);
+  }
+  private loadEngine() {
+    if (!this.ctx || !this.master) return Promise.resolve();
+    if (this.engineLoad) return this.engineLoad;
+    const ctx = this.ctx;
+    const master = this.master;
+    this.engineLoad = (async () => {
+      const response = await fetch(`${import.meta.env.BASE_URL}audio/engine-race.wav`);
+      if (!response.ok) throw new Error("Engine sample unavailable");
+      const buffer = await ctx.decodeAudioData(await response.arrayBuffer());
+      const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      source.buffer = buffer; source.loop = true; gain.gain.value = 0;
+      source.connect(gain); gain.connect(master); source.start();
+      this.engineSource = source; this.engineGain = gain;
+      this.hum(this.lastSpeed, this.lastBoost);
+    })().catch(() => { this.engineLoad = null; });
+    return this.engineLoad;
+  }
   private windGain: GainNode | null = null;
   driveMusic = 0.08;
   volume = 0.8;
@@ -25,8 +49,8 @@ class SonicCore {
   }
   setDrivingMix(driving: boolean) {
     this.driving = driving;
-    this.motors.forEach((motor, i) => { motor.type = driving ? (i === 0 ? "sawtooth" : "triangle") : (i === 2 ? "triangle" : "sine"); });
     this.syncMusicVolume();
+    this.hum(this.lastSpeed, this.lastBoost);
   }
   setVolume(value: number) {
     this.volume = Math.min(1, Math.max(0, value));
@@ -150,7 +174,10 @@ class SonicCore {
     if (this.on) {
       this.pending = true;
       try {
-        await Promise.all([this.ctx.resume(), this.music?.play()]);
+        const resumed = this.ctx.resume();
+        void this.music?.play().catch(() => {});
+        await resumed;
+        await this.loadEngine();
         useExperience.setState({audioError:""});
       } catch {
         this.on = false;
@@ -166,12 +193,19 @@ class SonicCore {
 
   /** 0..1 — raise the electric hum (performance / finale) */
   hum(v: number, boost = false) {
+    this.lastSpeed = v; this.lastBoost = boost;
     if (!this.ctx || !this.droneGain || !this.filter) return;
     const t = this.ctx.currentTime;
     const speed = Math.min(1.5, Math.max(0, v));
-    this.motors.forEach((motor, i) => motor.frequency.setTargetAtTime((this.driving ? 65 + speed * 115 : 52 + speed * 145) * (i + 1), t, 0.12));
-    this.droneGain.gain.setTargetAtTime(this.driving ? 0.22 + speed * 0.2 + (boost ? 0.08 : 0) : 0.1 + speed * 0.16, t, 0.15);
-    this.filter.frequency.setTargetAtTime(this.driving ? 700 + speed * 850 + (boost ? 650 : 0) : 260 + speed * 700, t, 0.15);
+    const race = this.driving && this.engineMode === "race" && !!this.engineSource;
+    this.engineSource?.playbackRate.setTargetAtTime(0.72 + speed * 1.7 + (boost ? 0.28 : 0), t, 0.18);
+    this.engineGain?.gain.setTargetAtTime(race ? 0.24 + speed * 0.28 + (boost ? 0.12 : 0) : 0, t, 0.12);
+    this.motors.forEach((motor, i) => {
+      motor.type = i === 2 ? "triangle" : "sine";
+      motor.frequency.setTargetAtTime((this.driving ? 110 + speed * 330 + (boost ? 120 : 0) : 52 + speed * 145) * (i + 1), t, 0.12);
+    });
+    this.droneGain.gain.setTargetAtTime(race ? 0 : this.driving ? 0.16 + speed * 0.13 + (boost ? 0.05 : 0) : 0.1 + speed * 0.16, t, 0.15);
+    this.filter.frequency.setTargetAtTime(this.driving ? 950 + speed * 1600 + (boost ? 750 : 0) : 260 + speed * 700, t, 0.15);
     this.windGain?.gain.setTargetAtTime(this.driving ? 0.02 + speed * 0.03 + (boost ? 0.08 : 0) : 0.012, t, 0.15);
   }
 
@@ -180,7 +214,7 @@ class SonicCore {
     const ctx = this.ctx;
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
-    oscillator.type = "sawtooth";
+    oscillator.type = this.engineMode === "electric" ? "sine" : "triangle";
     oscillator.frequency.setValueAtTime(90, ctx.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.65);
     oscillator.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 1.5);

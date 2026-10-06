@@ -18,6 +18,7 @@ export default function DriveControls() {
   const [cooldown, setCooldown] = useState(0);
   const [busy, setBusy] = useState(false);
   const [music, setMusic] = useState(Math.round(sonic.driveMusic * 100));
+  const [engineMode, setEngineMode] = useState(sonic.engineMode);
   const [volume, setVolume] = useState(Math.round(sonic.volume * 100));
   const cooldownUntil = useRef(0);
   const drag = useRef({active:false,x:0,y:0});
@@ -107,6 +108,11 @@ export default function DriveControls() {
       </div>
       <details className="mt-3">
         <summary className="cursor-pointer py-2 text-sm">Velocidad, sonido y color</summary>
+        <div className="my-3 flex gap-2" role="group" aria-label="Tipo de motor">
+          <button className={engineMode === "electric" ? "!border-ion !bg-ion/20" : ""} aria-pressed={engineMode === "electric"} onClick={()=>{setEngineMode("electric");sonic.setEngineMode("electric");}}>Eléctrico</button>
+          <button className={engineMode === "race" ? "!border-ion !bg-ion/20" : ""} aria-pressed={engineMode === "race"} onClick={()=>{setEngineMode("race");sonic.setEngineMode("race");}}>Carrera</button>
+        </div>
+        <p className="mb-3 text-xs text-white/85">{engineMode === "race" ? "Motor grabado / respuesta a velocidad y nitro" : "Motor eléctrico / sonido digital"}</p>
         <label htmlFor="drive-speed">Velocidad · {speed} km/h</label><input id="drive-speed" type="range" min="20" max="180" step="10" value={speed} onChange={e=>setSpeed(Number(e.target.value))}/>
         <label htmlFor="drive-volume">Volumen del motor · {volume}%</label><input id="drive-volume" type="range" min="0" max="100" value={volume} onChange={e=>{const v=Number(e.target.value);setVolume(v);sonic.setVolume(v/100);}}/>
         <label htmlFor="drive-music">Música de fondo · {music}%</label><input id="drive-music" type="range" min="0" max="30" value={music} onChange={e=>{const v=Number(e.target.value);setMusic(v);sonic.setDriveMusic(v/100);}}/>
