@@ -1,0 +1,156 @@
+/* ------------------------------------------------------------------ */
+/*  SonicCore — AERION's synthesized soundscape.                       */
+/*  No audio assets: a low electric drone + filtered wind, built      */
+/*  with WebAudio. Starts muted; toggled by the user.                 */
+/* ------------------------------------------------------------------ */
+
+class SonicCore {
+  private ctx: AudioContext | null = null;
+  private master: GainNode | null = null;
+  private droneGain: GainNode | null = null;
+  private filter: BiquadFilterNode | null = null;
+  private on = false;
+  private music: HTMLAudioElement | null = null;
+  private motors: OscillatorNode[] = [];
+  voiceEnabled = false;
+
+  speak(text: string) {
+    if (!this.voiceEnabled || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "es-ES";
+    utterance.rate = 0.96;
+    utterance.voice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("es")) ?? null;
+    if (this.music) this.music.volume = 0.12;
+    utterance.onend = utterance.onerror = () => { if (this.music) this.music.volume = 0.38; };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  respond(action: string) {
+    const responses: Record<string,string> = {
+      night: "Modo nocturno preparado. He reducido la luz de la cabina y seleccionado la firma azul. La ruta mostrada es una simulación.",
+      range: "He abierto la vista de energía. En esta demostración, la propulsión representa el setenta y dos por ciento del consumo.",
+      autonomous: "La vista conceptual muestra los límites del carril y los objetos de ejemplo. No es conducción autónoma real.",
+      relax: "Listo. Iluminación cálida, interior claro y una atmósfera más tranquila. Disfruta el camino.",
+    };
+    this.speak(responses[action] ?? "Listo.");
+  }
+
+  private init() {
+    if (this.ctx) return;
+    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(ctx.destination);
+
+    const droneGain = ctx.createGain();
+    droneGain.gain.value = 0.05;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 260;
+    filter.Q.value = 2;
+    droneGain.connect(filter);
+    filter.connect(master);
+
+    const o1 = ctx.createOscillator();
+    o1.type = "sine";
+    o1.frequency.value = 52;
+    const o2 = ctx.createOscillator();
+    o2.type = "sine";
+    o2.frequency.value = 104.6;
+    o2.detune.value = 4;
+    const o3 = ctx.createOscillator();
+    o3.type = "triangle";
+    o3.frequency.value = 209.3;
+    const g3 = ctx.createGain();
+    g3.gain.value = 0.12;
+    o1.connect(droneGain);
+    o2.connect(droneGain);
+    o3.connect(g3);
+    g3.connect(droneGain);
+
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 0.08;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 90;
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    /* wind layer */
+    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuf;
+    noise.loop = true;
+    const band = ctx.createBiquadFilter();
+    band.type = "bandpass";
+    band.frequency.value = 900;
+    band.Q.value = 0.6;
+    const windGain = ctx.createGain();
+    windGain.gain.value = 0.012;
+    noise.connect(band);
+    band.connect(windGain);
+    windGain.connect(master);
+
+    o1.start(); o2.start(); o3.start(); lfo.start(); noise.start();
+    this.motors = [o1, o2, o3];
+    this.music = new Audio(`${import.meta.env.BASE_URL}audio/drive.mp3`);
+    this.music.loop = true;
+    this.music.volume = 0.38;
+    this.music.id = "aerion-soundtrack";
+    this.music.hidden = true;
+    document.body.appendChild(this.music);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { this.music?.pause(); void ctx.suspend(); window.speechSynthesis?.cancel(); }
+      else if (this.on) { void ctx.resume(); void this.music?.play().catch(() => {}); }
+    });
+    this.ctx = ctx;
+    this.master = master;
+    this.droneGain = droneGain;
+    this.filter = filter;
+  }
+
+  toggle(): boolean {
+    this.init();
+    if (!this.ctx || !this.master) return false;
+    if (this.ctx.state === "suspended") this.ctx.resume();
+    this.on = !this.on;
+    if (this.on) void this.music?.play().catch(() => {});
+    else { this.music?.pause(); window.speechSynthesis?.cancel(); }
+    this.master.gain.cancelScheduledValues(this.ctx.currentTime);
+    this.master.gain.linearRampToValueAtTime(this.on ? 0.6 : 0, this.ctx.currentTime + 0.8);
+    return this.on;
+  }
+
+  /** 0..1 — raise the electric hum (performance / finale) */
+  hum(v: number) {
+    if (!this.ctx || !this.droneGain || !this.filter) return;
+    const t = this.ctx.currentTime;
+    this.motors.forEach((motor, i) => motor.frequency.setTargetAtTime((52 + v * 145) * (i + 1), t, 0.25));
+    this.droneGain.gain.linearRampToValueAtTime(0.05 + v * 0.1, t + 1.2);
+    this.filter.frequency.linearRampToValueAtTime(260 + v * 700, t + 1.2);
+  }
+
+  /** short UI feedback */
+  blip() {
+    this.init();
+    if (!this.ctx || !this.master || !this.on) return;
+    const ctx = this.ctx;
+    const o = ctx.createOscillator();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(720, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(340, ctx.currentTime + 0.09);
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.07, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    o.connect(g);
+    g.connect(this.master);
+    o.start();
+    o.stop(ctx.currentTime + 0.14);
+  }
+}
+
+export const sonic = new SonicCore();
