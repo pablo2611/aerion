@@ -187,7 +187,7 @@ export default function Configurator() {
                 <div className="mt-3 grid grid-cols-4 gap-3" role="radiogroup" aria-label="Wheel finish">
                   {WHEEL_FINISHES.map((item) => <button key={item.id} role="radio" aria-checked={config.wheelFinish === item.id} title={item.name} onClick={() => update({ wheelFinish: item.id }, `${item.name.toUpperCase()} WHEELS`, "wheel")} className={`flex aspect-square items-center justify-center border ${config.wheelFinish === item.id ? "border-ink" : "border-ink/15"}`}><span className="h-7 w-7 rounded-full border border-black/20" style={{ backgroundColor: item.hex }} /></button>)}
                 </div>
-                <p className="mt-3 font-mono-tech text-[12px] tracking-[0.2em] text-ink/55">{wheelFinish.name.toUpperCase()} · AUTHORED RIM SURFACES</p>
+                <p className="mt-3 font-mono-tech text-[12px] tracking-[0.2em] text-ink/55">{wheelFinish.name.toUpperCase()} · LIVE 3D GEOMETRY / SAME DIAMETER</p>
                 <p className="mt-6 font-mono-tech text-[12px] tracking-[0.3em] opacity-55">BRAKE CALIPERS</p>
                 <div className="mt-3 flex gap-3">{CALIPERS.map((item) => <button key={item.id} aria-label={item.name} onClick={() => update({ caliper: item.id }, `${item.name.toUpperCase()} CALIPERS`, "wheel")} className={`h-9 w-9 rounded-full border ${config.caliper === item.id ? "ring-2 ring-ink ring-offset-2 ring-offset-paper" : "border-ink/20"}`} style={{ backgroundColor: item.hex }} />)}</div>
               </div>}

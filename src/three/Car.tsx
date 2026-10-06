@@ -7,6 +7,7 @@ import { AERION_MODEL } from "../data/model";
 import { CALIPERS, FINISHES, INTERIORS, PAINTS, SIGNATURES, WHEEL_FINISHES } from "../data/content";
 import { runtime, useExperience, vehicleCamera } from "../store";
 import Exhaust from "./Exhaust";
+import { createWheelDesigns } from "./WheelDesigns";
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -106,6 +107,25 @@ function prepareModel(source: THREE.Group) {
   root.updateMatrixWorld(true);
 
   const wheels: THREE.Object3D[] = [];
+  const wheelDesigns: Record<string, THREE.Group>[] = [];
+  const rimNodes: THREE.Object3D[] = [];
+  root.traverse(object => { if (/^Wheel(Front|Rear)[LR]Rim$/.test(object.name)) rimNodes.push(object); });
+  rimNodes.forEach(original => {
+    original.visible = false;
+    const replacement = new THREE.Group();
+    replacement.name = `${original.name}Custom`;
+    replacement.position.copy(original.position);
+    replacement.quaternion.copy(original.quaternion);
+    const designs = createWheelDesigns(original.name.includes("LRim") ? 1 : -1);
+    Object.values(designs).forEach(design => { replacement.add(design); design.traverse(node => {
+      if (node instanceof THREE.Mesh && isPbr(node.material)) {
+        node.castShadow = true; node.receiveShadow = true;
+        if (!catalog.rims.includes(node.material)) catalog.rims.push(node.material);
+      }
+    }); });
+    original.parent!.add(replacement);
+    wheelDesigns.push(designs);
+  });
   root.traverse(object => {
     if (/^Wheel(Front|Rear)[LR]$/.test(object.name)) {
       if (object.name.startsWith("WheelFront")) object.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),Math.PI/6));
@@ -113,7 +133,7 @@ function prepareModel(source: THREE.Group) {
       wheels.push(...object.children.filter(child => !/BrakePad/.test(child.name)));
     }
   });
-  return { root, catalog, wheels };
+  return { root, catalog, wheels, wheelDesigns };
 }
 
 export default function Car() {
@@ -135,6 +155,10 @@ export default function Car() {
 
   const gltf = useGLTF(AERION_MODEL.url, AERION_MODEL.dracoPath, true, extendLoader);
   const prepared = useMemo(() => prepareModel(gltf.scene), [gltf.scene]);
+
+  useEffect(() => {
+    prepared.wheelDesigns.forEach(designs => Object.entries(designs).forEach(([id, group]) => { group.visible = id === cfg.wheel; }));
+  }, [prepared, cfg.wheel]);
 
   useEffect(() => {
     setModelReady(true);
@@ -198,29 +222,9 @@ export default function Car() {
 
     prepared.catalog.rims.forEach((material) => {
       material.color.lerp(new THREE.Color(wheelFinish.hex), 0.055);
-      material.metalness = damp(material.metalness, 1, 4, dtc);
+      material.metalness = damp(material.metalness, 0.65, 4, dtc);
       material.roughness = damp(material.roughness, wheelFinish.rough, 4, dtc);
     });
-    // The authored wheel has two independent geometric surface layers (Rim1/Rim2).
-    // The four packages use real visibility combinations of those imported surfaces.
-    const layers: Record<string, [number, number]> = {
-      aeroblade: [1, 1],
-      turbine: [1, 0.08],
-      monolith: [0.06, 1],
-      vector: [1, 0.48],
-    };
-    const [rim1Opacity, rim2Opacity] = layers[cfg.wheel] ?? layers.aeroblade;
-    prepared.catalog.rim1.forEach((material) => {
-      material.transparent = rim1Opacity < 0.99;
-      material.opacity = damp(material.opacity, rim1Opacity, 7, dtc);
-      material.depthWrite = rim1Opacity > 0.5;
-    });
-    prepared.catalog.rim2.forEach((material) => {
-      material.transparent = rim2Opacity < 0.99;
-      material.opacity = damp(material.opacity, rim2Opacity, 7, dtc);
-      material.depthWrite = rim2Opacity > 0.5;
-    });
-
     prepared.catalog.headlights.forEach((material) => {
       material.emissive.lerp(signatureColor, 0.06);
       material.color.copy(signatureColor);
