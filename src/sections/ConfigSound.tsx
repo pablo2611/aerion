@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useExperience } from "../store";
+import { runtime, useExperience } from "../store";
 import { sonic } from "../audio";
 
 export default function ConfigSound() {
@@ -12,5 +12,6 @@ export default function ConfigSound() {
     <label className="mt-3 flex items-center justify-between text-sm" htmlFor="config-volume"><span>Volumen</span><span>{volume}%</span></label>
     <input className="mt-2 w-full accent-[#08768a]" id="config-volume" type="range" min="0" max="100" value={volume} onChange={e=>{const v=Number(e.target.value);setVolume(v);sonic.setVolume(v/100);}}/>
     <p role="status" className="mt-2 text-xs leading-relaxed text-ink/80">{error || (on ? "Música y motor activos" : "Activa el sonido para escuchar la experiencia.")}</p>
+    <button className="mt-3 w-full border border-ink/30 px-3 py-3 text-sm" onClick={() => {runtime.driving=true;useExperience.setState({driving:true,exploreOpen:false});}}>Probar en carretera</button>
   </div>;
 }

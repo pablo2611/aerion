@@ -11,6 +11,7 @@ export default function DriveControls() {
   const [displaySpeed, setDisplaySpeed] = useState(0);
   const [paused, setPaused] = useState(false);
   const audio = useExperience(s => s.audioOn);
+  const phase = useExperience(s => s.phase);
   const close = () => { runtime.driving = false; useExperience.setState({ driving:false }); sonic.hum(0); };
   useEffect(() => {
     if (!driving) return;
@@ -22,6 +23,7 @@ export default function DriveControls() {
     return () => { document.body.style.overflow = old; window.removeEventListener("keydown",key); clearInterval(timer); };
   },[driving]);
   useEffect(() => { runtime.targetSpeed = paused ? 0 : speed; },[speed,paused]);
+  if (!driving && phase === "configurator") return null;
   if (!driving) return <button disabled={!ready} className="fixed bottom-5 right-5 z-30 btn-solid" onClick={() => { runtime.driving = true; useExperience.setState({driving:true,exploreOpen:false}); }}>Ver en carretera</button>;
   return <div className="fixed inset-0 z-[60] pointer-events-none text-white" role="region" aria-label="Experiencia en carretera">
     <div className="absolute left-5 top-20 sm:top-5"><h2 className="font-display text-xl sm:text-3xl font-bold">AERION · On the road</h2><p className="mt-1 text-sm">Gran turismo eléctrico · simulación 3D</p></div>

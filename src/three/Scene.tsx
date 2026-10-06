@@ -151,7 +151,7 @@ function Rig() {
       v.focus.y = damp(v.focus.y, v.targetFocus.y, 4.2, dtc);
       v.focus.z = damp(v.focus.z, v.targetFocus.z, 4.2, dtc);
       const cp = Math.cos(v.pitch);
-      const radius = v.radius * (configOrbit && size.width >= 1024 ? 1.28 : 1);
+      const radius = v.radius * (configOrbit ? 1.28 : 1);
       targetPos = new THREE.Vector3(
         v.focus.x + Math.cos(v.yaw) * cp * radius,
         v.focus.y + Math.sin(v.pitch) * radius,
@@ -180,8 +180,8 @@ function Rig() {
     c.lookAt(look.current);
     const velKick = !freeView && !reduced && quality === "HIGH" ? Math.min(Math.abs(runtime.velocity) * 0.045, 5) : 0;
     c.fov = damp(c.fov, targetFov + velKick, 3.5, dtc);
-    if (configOrbit && !exploreOpen && !runtime.driving && size.width >= 1024) {
-      c.setViewOffset(size.width,size.height,215,0,size.width,size.height);
+    if (runtime.chapter === 7 && !exploreOpen && !runtime.driving) {
+      c.setViewOffset(size.width,size.height,size.width >= 1024 ? 215 : 0,size.width < 1024 ? size.height*0.12 : 0,size.width,size.height);
     } else if (c.view?.enabled) c.clearViewOffset();
     c.updateProjectionMatrix();
     if (caRef.current?.offset) {
