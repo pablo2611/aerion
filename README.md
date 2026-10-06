@@ -6,7 +6,7 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 
 [**Abrir la experiencia →**](https://pablo2611.github.io/aerion/)
 
-![AERION en carretera](docs/aerion.jpg)
+<a href="https://pablo2611.github.io/aerion/"><img src="docs/project-card.svg" alt="AERION — abrir la experiencia de conducción" width="380" /></a>
 
 ## Explora
 
