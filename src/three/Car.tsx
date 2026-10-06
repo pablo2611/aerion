@@ -6,6 +6,7 @@ import { KTX2Loader, type GLTFLoader } from "three-stdlib";
 import { AERION_MODEL } from "../data/model";
 import { CALIPERS, FINISHES, INTERIORS, PAINTS, SIGNATURES, WHEEL_FINISHES } from "../data/content";
 import { runtime, useExperience, vehicleCamera } from "../store";
+import Exhaust from "./Exhaust";
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -150,7 +151,7 @@ export default function Car() {
     const t = runtime.local;
     const heroT = runtime.bootAt ? clamp((now - runtime.bootAt) / 4200, 0, 1) : 0;
     const explore = useExperience.getState().exploreOpen;
-    const interactive = explore || (ch === 7 && vehicleCamera.configActive);
+    const interactive = runtime.driving || explore || (ch === 7 && vehicleCamera.configActive);
     const portrait = state.size.width / state.size.height < 0.78;
 
     const paint = PAINTS.find((item) => item.id === cfg.paint) ?? PAINTS[0];
@@ -262,6 +263,7 @@ export default function Car() {
       <group ref={modelPivot} rotation={[0, Math.PI / 2, 0]}>
         <primitive object={prepared.root} />
       </group>
+      <Exhaust />
     </group>
   );
 }

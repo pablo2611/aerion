@@ -15,7 +15,9 @@ export default function Road() {
     group.current.visible = runtime.driving;
     if (!runtime.driving) return;
     const dt = Math.min(delta,0.05);
-    runtime.speed = THREE.MathUtils.damp(runtime.speed,runtime.targetSpeed,1.5,dt);
+    const boosting = performance.now() < runtime.nitroUntil;
+    const target = boosting ? Math.min(runtime.targetSpeed + 85, 260) : runtime.targetSpeed;
+    runtime.speed = THREE.MathUtils.damp(runtime.speed,target,boosting ? 2.2 : 1.5,dt);
     if (!runtime.reduced) distance.current += runtime.speed / 3.6 * dt;
     if(posts.current) {
       for(let i=0;i<32;i++) {

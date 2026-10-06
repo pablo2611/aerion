@@ -3,7 +3,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, ChromaticAberration, SMAA } from "@react-three/postprocessing";
-import { runtime, useExperience, DPR, vehicleCamera } from "../store";
+import { runtime, useExperience, DPR, vehicleCamera, driveCamera } from "../store";
 import Car from "./Car";
 import Road from "./Road";
 import Showroom from "./Showroom";
@@ -130,7 +130,7 @@ function Rig() {
     const dtc = Math.min(dt, 0.05);
     const now = performance.now() / 1000;
     const reduced = runtime.reduced;
-    const configOrbit = runtime.chapter === 7 && vehicleCamera.configActive;
+    const configOrbit = !runtime.driving && runtime.chapter === 7 && vehicleCamera.configActive;
     const freeView = exploreOpen || configOrbit;
     const c = camera;
     let targetPos: THREE.Vector3;
@@ -164,9 +164,22 @@ function Rig() {
       look.current.y = damp(look.current.y, v.focus.y, 4.5, dtc);
       look.current.z = damp(look.current.z, v.focus.z, 4.5, dtc);
     } else if (runtime.driving) {
-      targetPos = new THREE.Vector3(size.width < 768 ? 7.8 : 6.8, 2.4, size.width < 768 ? 8.8 : 6.6);
+      const v = driveCamera;
+      const boost = performance.now() < runtime.nitroUntil;
+      const yaw = boost ? Math.PI - 0.85 : v.targetYaw;
+      const pitch = boost ? 0.16 : v.targetPitch;
+      const radius = (boost ? 4.4 : v.targetRadius) * (size.width / size.height < 0.78 ? boost ? 1.4 : 1.65 : 1);
+      v.yaw = damp(v.yaw, yaw, reduced ? 12 : 3.2, dtc);
+      v.pitch = damp(v.pitch, pitch, 3.2, dtc);
+      v.radius = damp(v.radius, radius, 3.2, dtc);
+      const focusX = boost ? -2.7 : 0;
+      look.current.lerp(new THREE.Vector3(focusX, boost ? 0.38 : 0.65, 0), 1 - Math.exp(-3.2 * dtc));
+      targetPos = new THREE.Vector3(
+        look.current.x + Math.cos(v.yaw) * Math.cos(v.pitch) * v.radius,
+        look.current.y + Math.sin(v.pitch) * v.radius,
+        Math.sin(v.yaw) * Math.cos(v.pitch) * v.radius
+      );
       targetFov = size.width < 768 ? 54 : 43;
-      look.current.lerp(new THREE.Vector3(0,0.65,0),1-Math.exp(-3*dtc));
     } else {
       const cam = camAt(runtime.chapter, runtime.local, now, size.width, size.height);
       targetPos = new THREE.Vector3(cam.x, cam.y, cam.z);

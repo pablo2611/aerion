@@ -527,6 +527,13 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .drive-panel button,.voice-panel button { min-height:44px; padding:8px 14px; border:1px solid #5fe8ff66; }
 .drive-panel input { accent-color:#5fe8ff; width:100%; }
 .drive-panel label { display:block; margin-top:12px; }
+.drive-controls { width:360px; max-height:55dvh; overflow-y:auto; }
+.drive-orbit { cursor:grab; }
+.drive-orbit:active { cursor:grabbing; }
+.drive-orbit:focus-visible { outline:2px solid #5fe8ff; outline-offset:-4px; }
+.drive-nitro { background:#a33c16; color:#fff; font-weight:700; }
+.drive-panel button:disabled { opacity:.6; cursor:default; }
+@media(max-width:767px){.drive-controls{width:auto;max-height:34dvh;bottom:12px;left:12px;right:12px;}.drive-heading{left:16px;top:78px;right:16px;}}
 .voice-panel { margin-top:16px; }
 @media(max-width:767px){ .ai-experience { min-height:900px; overflow-y:auto; } .drive-panel {padding:14px;} }
 

@@ -10,9 +10,10 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 
 ## Explora
 
-- **Carretera en movimiento:** ruedas animadas, velocidad gradual de 20 a 180 km/h, pausa y paisaje de montaña.
+- **Carretera en movimiento:** cámara 360° con arrastre, scroll y teclado; ruedas animadas, velocidad gradual y pausa.
+- **Nitro de concepto:** impulso de 4,5 segundos, toma automática de los dos escapes con llamas 3D y regreso a tu cámara anterior. Es un paquete deportivo ficticio de la simulación.
 - **Tu color:** ocho pinturas, acabados, llantas, interiores y firmas luminosas en vivo.
-- **Sonido:** música ambiental original y motor eléctrico sintetizado que responde a la velocidad. El sonido se activa con un botón.
+- **Sonido:** motor deportivo sintetizado que responde a velocidad y nitro. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
 - **Voz en español:** respuestas habladas y comandos como «noche», «autonomía», «sensores» o «relajar».
 - **Atmósfera:** humo de flujo suave, iluminación de estudio y recorrido por nueve capítulos.
 

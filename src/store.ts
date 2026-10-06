@@ -33,6 +33,13 @@ export const runtime = {
   driving: false,
   speed: 0,
   targetSpeed: 80,
+  nitroUntil: 0,
+};
+
+/** Road camera stays independent from the showroom and configuration camera. */
+export const driveCamera = {
+  yaw: 0.78, pitch: 0.22, radius: 9.5,
+  targetYaw: 0.78, targetPitch: 0.22, targetRadius: 9.5,
 };
 
 export interface AeroConfig {
@@ -194,4 +201,3 @@ export const DPR: Record<Quality, [number, number]> = {
   MEDIUM: [1, 1.5],
   LOW: [0.75, 1],
 };
-
