@@ -31,6 +31,12 @@ function isPbr(material: THREE.Material): material is PbrMaterial {
 }
 
 function cloneMaterial(material: THREE.Material) {
+  if (/^paint [12]( |$)/i.test(material.name) && material instanceof THREE.MeshStandardMaterial && !(material instanceof THREE.MeshPhysicalMaterial)) {
+    const physical = new THREE.MeshPhysicalMaterial();
+    THREE.MeshStandardMaterial.prototype.copy.call(physical, material);
+    physical.clearcoat = 1;
+    return physical;
+  }
   return material.clone();
 }
 
@@ -213,11 +219,13 @@ export default function Car() {
 
     prepared.catalog.headlights.forEach((material) => {
       material.emissive.lerp(signatureColor, 0.06);
-      material.emissiveIntensity = 1.2 + headlight * 6.2;
+      material.color.copy(signatureColor);
+      material.emissiveIntensity = 0.7 + headlight * 1.8;
     });
     prepared.catalog.signalLights.forEach((material) => {
       material.emissive.lerp(signatureColor, 0.06);
-      material.emissiveIntensity = 0.8 + headlight * 3;
+      material.color.copy(signatureColor);
+      material.emissiveIntensity = 0.5 + headlight * 1.2;
     });
     prepared.catalog.brakeLights.forEach((material) => {
       material.emissiveIntensity = 1.4 + night * 3.2 + finale * 2;

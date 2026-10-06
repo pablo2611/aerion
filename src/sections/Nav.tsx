@@ -22,8 +22,8 @@ function AudioToggle() {
 
   return (
     <button
-      onClick={() => {
-        useExperience.setState({ audioOn: sonic.toggle() });
+      onClick={async () => {
+        useExperience.setState({ audioOn: await sonic.toggle() });
         sonic.blip();
       }}
       className="group flex h-10 items-center gap-2 border border-line px-3 transition-colors duration-300 hover:border-ion/60"

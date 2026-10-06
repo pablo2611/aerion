@@ -30,7 +30,7 @@ export default function DriveControls() {
       <div className="flex items-baseline justify-between gap-5"><strong className="font-display text-4xl tabular-nums">{displaySpeed} <span className="text-base">km/h</span></strong><button aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Continuar" : "Pausar"}</button></div>
       <label htmlFor="drive-speed">Velocidad simulada · {speed} km/h</label><input id="drive-speed" type="range" min="20" max="180" step="10" value={speed} onChange={e => setSpeed(Number(e.target.value))}/>
       <div className="my-3 flex flex-wrap gap-2" role="group" aria-label="Color del carro">{PAINTS.map(p => <button key={p.id} aria-label={p.name} aria-pressed={paint === p.id} onClick={() => useExperience.getState().setConfig({paint:p.id})} style={{background:p.hex,outline:paint===p.id ? '2px solid #fff' : undefined,minHeight:32,width:32,padding:0}} />)}</div>
-      <button aria-pressed={audio} onClick={() => useExperience.setState({audioOn:sonic.toggle()})}>{audio ? "Silenciar música y motor" : "Activar música y motor"}</button>
+      <button aria-pressed={audio} onClick={async () => useExperience.setState({audioOn:await sonic.toggle()})}>{audio ? "Silenciar música y motor" : "Activar música y motor"}</button>
     </div>
   </div>;
 }

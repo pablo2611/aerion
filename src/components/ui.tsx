@@ -26,7 +26,7 @@ export function Cursor() {
     const onMove = (e: MouseEvent) => {
       x = e.clientX; y = e.clientY; visible = true;
       const t = (e.target as HTMLElement)?.closest?.("[data-cursor]") as HTMLElement | null;
-      ts = t ? (t.dataset.cursorExpand ? 2.4 : 1.6) : 1;
+      ts = t ? 1.12 : 1;
       if (label.current) label.current.textContent = t?.dataset.cursorLabel ?? "";
     };
     const onLeave = () => (visible = false);
@@ -39,7 +39,7 @@ export function Cursor() {
       if (dot.current)
         dot.current.style.transform = `translate3d(${x - 3}px, ${y - 3}px, 0)`;
       if (ring.current) {
-        ring.current.style.transform = `translate3d(${rx - 17}px, ${ry - 17}px, 0) scale(${s})`;
+        ring.current.style.transform = `translate3d(${rx - 24}px, ${ry - 14}px, 0) scale(${s})`;
         ring.current.style.opacity = String(op);
       }
       if (dot.current) dot.current.style.opacity = String(op);
@@ -59,6 +59,13 @@ export function Cursor() {
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[70] hidden md:block">
       <div ref={dot} className="cursor-dot" />
       <div ref={ring} className="cursor-ring">
+        <svg viewBox="0 0 64 36" width="48" height="28" fill="none">
+          <path d="M7 23 11 15 22 13 29 6h15l8 9 7 3v9H7z" fill="#155cc8" stroke="#c8f7ff" strokeWidth="1.5"/>
+          <path d="m25 13 6-5h11l5 6z" fill="#07111c" stroke="#5fe8ff"/>
+          <path d="M10 20h8m34 0h5" stroke="#eaffff" strokeWidth="2"/>
+          <circle cx="20" cy="27" r="6" fill="#08111c" stroke="#c8f7ff"/><circle cx="48" cy="27" r="6" fill="#08111c" stroke="#c8f7ff"/>
+          <circle cx="20" cy="27" r="2" fill="#5fe8ff"/><circle cx="48" cy="27" r="2" fill="#5fe8ff"/>
+        </svg>
         <span ref={label} className="cursor-label" />
       </div>
     </div>
@@ -226,6 +233,7 @@ export function Counter({
 
 export function ChapterRail() {
   const phase = useExperience((s) => s.phase);
+  if (phase === "configurator") return null;
   return (
     <nav
       aria-label="Chapters"

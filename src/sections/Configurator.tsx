@@ -17,6 +17,7 @@ import { setVehicleHotspot, setVehicleView, useExperience, vehicleCamera } from 
 import { useAIDemo } from "../hooks/useAIDemo";
 import { sonic } from "../audio";
 import { prefersReduced } from "../utils/motion";
+import ConfigSound from "./ConfigSound";
 
 type ConfigTab = "paint" | "wheels" | "interior" | "lighting" | "ai";
 const TABS: { id: ConfigTab; label: string }[] = [
@@ -131,12 +132,12 @@ export default function Configurator() {
 
           {/* One category at a time: no dense technical wall. */}
           <div className="configurator-panel pointer-events-auto absolute inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] max-h-[43dvh] overflow-y-auto border border-ink/20 bg-paper/95 text-ink shadow-[0_-18px_60px_rgba(0,0,0,0.12)] backdrop-blur-md sm:inset-x-8 sm:max-h-[38dvh] lg:inset-y-24 lg:left-auto lg:right-10 lg:w-[390px] lg:max-h-none">
-            <nav className="sticky top-0 z-10 flex overflow-x-auto border-b border-ink/15 bg-paper/95" aria-label="Configuration categories">
+            <nav className="config-tabs sticky top-0 z-10 grid grid-cols-3 border-b border-ink/15 bg-paper" aria-label="Configuration categories">
               {TABS.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setTab(item.id)}
-                  className={`shrink-0 px-3 py-3 font-mono-tech text-[12px] tracking-[0.2em] uppercase transition-colors sm:flex-1 ${tab === item.id ? "bg-ink text-paper" : "text-ink/55 hover:text-ink"}`}
+                  className={`px-2 py-3 font-mono-tech text-[12px] tracking-[0.04em] uppercase transition-colors ${tab === item.id ? "bg-ink text-paper" : "text-ink/75 hover:text-ink"}`}
                   aria-current={tab === item.id ? "page" : undefined}
                 >
                   {item.label}
@@ -200,17 +201,18 @@ export default function Configurator() {
 
               {tab === "lighting" && <div>
                 <p className="font-mono-tech text-[12px] tracking-[0.3em] opacity-55">LUMENSIG</p>
-                <div className="mt-4 space-y-2">{SIGNATURES.map((item) => <button key={item.id} onClick={() => update({ signature: item.id }, `${item.name.toUpperCase()} SIGNATURE`)} className={`flex w-full items-center justify-between border px-4 py-3 ${config.signature === item.id ? "border-ink bg-ink/[0.06]" : "border-ink/15"}`}><span className="font-mono-tech text-[12px] tracking-[0.2em]">{item.name.toUpperCase()}</span><span className="h-2 w-16" style={{ backgroundColor: item.hex, boxShadow: `0 0 14px ${item.hex}` }} /></button>)}</div>
+                <div className="mt-4 space-y-2">{SIGNATURES.map((item) => <button key={item.id} aria-pressed={config.signature === item.id} onClick={() => update({ signature: item.id }, `${item.name.toUpperCase()} SIGNATURE`)} className={`flex w-full items-center justify-between border px-4 py-3 ${config.signature === item.id ? "border-ink bg-ink/[0.06]" : "border-ink/15"}`}><span className="font-mono-tech text-[12px] tracking-[0.2em]">{item.name.toUpperCase()}</span><span className="h-2 w-16" style={{ backgroundColor: item.hex, boxShadow: `0 0 14px ${item.hex}` }} /></button>)}</div>
               </div>}
 
               {tab === "ai" && <div>
-                <p className="font-mono-tech text-[12px] tracking-[0.3em] text-[#08768a]">AERION INTELLIGENCE · POWERED BY CLAUDE</p>
-                <p className="mt-3 text-[12px] leading-relaxed text-ink/65">Choose a guided command. Claude changes the cabin, route or vehicle display and confirms every action.</p>
+                <p className="font-mono-tech text-[12px] tracking-[0.3em] text-[#08768a]">AERION · ASISTENTE LOCAL</p>
+                <p className="mt-3 text-[12px] leading-relaxed text-ink/65">Comandos de demostración para cambiar la cabina y escuchar una respuesta.</p>
                 <div className="mt-4 space-y-2">{INTELLIGENCE_DEMOS.map((demo) => <button key={demo.id} onClick={() => { runAI(demo.id); announce(`${demo.effect}`); }} className="group flex w-full items-center justify-between border border-ink/15 px-4 py-3 text-left hover:border-ink"><span className="font-mono-tech text-[12px] tracking-[0.17em]">{demo.short.toUpperCase()}</span><span className="text-[#08768a] transition-transform group-hover:translate-x-1">→</span></button>)}</div>
                 <div className="mt-5 flex items-center gap-3 border-t border-ink/15 pt-4"><span className={`h-2 w-2 rounded-full ${aiStage === "listening" ? "bg-red-500" : aiStage === "processing" ? "bg-amber-500" : "bg-[#08768a]"}`} /><span className="font-mono-tech text-[12px] tracking-[0.23em] uppercase">{aiStage}</span></div>
                 <button onClick={() => go("interior")} className="mt-5 w-full bg-ink py-3 font-mono-tech text-[12px] tracking-[0.22em] text-paper">OPEN FULL AI EXPERIENCE</button>
               </div>}
 
+              <ConfigSound />
               <div className="mt-6 border-t border-ink/15 pt-5">
                 <Magnetic as="button" onClick={() => go("finale")} className="btn-solid w-full justify-center" data-cursor>{c.reserve}</Magnetic>
               </div>

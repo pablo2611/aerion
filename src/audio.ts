@@ -4,12 +4,20 @@
 /*  with WebAudio. Starts muted; toggled by the user.                 */
 /* ------------------------------------------------------------------ */
 
+import { useExperience } from "./store";
 class SonicCore {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private droneGain: GainNode | null = null;
   private filter: BiquadFilterNode | null = null;
   private on = false;
+  private pending = false;
+  volume = 0.8;
+  setVolume(value: number) {
+    this.volume = Math.min(1, Math.max(0, value));
+    if (this.music) this.music.volume = this.volume;
+    if (this.master && this.ctx) this.master.gain.setTargetAtTime(this.on ? this.volume : 0, this.ctx.currentTime, 0.1);
+  }
   private music: HTMLAudioElement | null = null;
   private motors: OscillatorNode[] = [];
   voiceEnabled = false;
@@ -22,7 +30,7 @@ class SonicCore {
     utterance.rate = 0.96;
     utterance.voice = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("es")) ?? null;
     if (this.music) this.music.volume = 0.12;
-    utterance.onend = utterance.onerror = () => { if (this.music) this.music.volume = 0.38; };
+    utterance.onend = utterance.onerror = () => { if (this.music) this.music.volume = this.volume; };
     window.speechSynthesis.speak(utterance);
   }
 
@@ -99,7 +107,7 @@ class SonicCore {
     this.motors = [o1, o2, o3];
     this.music = new Audio(`${import.meta.env.BASE_URL}audio/drive.mp3`);
     this.music.loop = true;
-    this.music.volume = 0.38;
+    this.music.volume = this.volume;
     this.music.id = "aerion-soundtrack";
     this.music.hidden = true;
     document.body.appendChild(this.music);
@@ -113,15 +121,25 @@ class SonicCore {
     this.filter = filter;
   }
 
-  toggle(): boolean {
+  async toggle(): Promise<boolean> {
     this.init();
     if (!this.ctx || !this.master) return false;
-    if (this.ctx.state === "suspended") this.ctx.resume();
+    if (this.pending) return this.on;
     this.on = !this.on;
-    if (this.on) void this.music?.play().catch(() => {});
+    if (this.on) {
+      this.pending = true;
+      try {
+        await Promise.all([this.ctx.resume(), this.music?.play()]);
+        useExperience.setState({audioError:""});
+      } catch {
+        this.on = false;
+        this.music?.pause();
+        useExperience.setState({audioError:"El navegador bloqueó el sonido. Pulsa Activar de nuevo y revisa el volumen de la pestaña."});
+      } finally { this.pending = false; }
+    }
     else { this.music?.pause(); window.speechSynthesis?.cancel(); }
     this.master.gain.cancelScheduledValues(this.ctx.currentTime);
-    this.master.gain.linearRampToValueAtTime(this.on ? 0.6 : 0, this.ctx.currentTime + 0.8);
+    this.master.gain.linearRampToValueAtTime(this.on ? this.volume : 0, this.ctx.currentTime + 0.2);
     return this.on;
   }
 
@@ -130,7 +148,7 @@ class SonicCore {
     if (!this.ctx || !this.droneGain || !this.filter) return;
     const t = this.ctx.currentTime;
     this.motors.forEach((motor, i) => motor.frequency.setTargetAtTime((52 + v * 145) * (i + 1), t, 0.25));
-    this.droneGain.gain.linearRampToValueAtTime(0.05 + v * 0.1, t + 1.2);
+    this.droneGain.gain.setTargetAtTime(0.1 + v * 0.16, t, 0.3);
     this.filter.frequency.linearRampToValueAtTime(260 + v * 700, t + 1.2);
   }
 

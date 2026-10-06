@@ -122,6 +122,7 @@ interface ExperienceState {
   reducedMotion: boolean;
   phase: string; // "hero" | chapter id
   audioOn: boolean;
+  audioError: string;
   driving: boolean;
   menuOpen: boolean;
   exploreOpen: boolean;
@@ -148,6 +149,7 @@ export const useExperience = create<ExperienceState>((set) => ({
   reducedMotion: false,
   phase: "hero",
   audioOn: false,
+  audioError: "",
   driving: false,
   menuOpen: false,
   exploreOpen: false,

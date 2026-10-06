@@ -6,6 +6,7 @@ import { EffectComposer, Bloom, Vignette, ChromaticAberration, SMAA } from "@rea
 import { runtime, useExperience, DPR, vehicleCamera } from "../store";
 import Car from "./Car";
 import Road from "./Road";
+import { SIGNATURES } from "../data/content";
 import { AirFlow, EnergyFlow, HoloField } from "./Particles";
 import { FLOOR } from "./shaders";
 
@@ -150,10 +151,11 @@ function Rig() {
       v.focus.y = damp(v.focus.y, v.targetFocus.y, 4.2, dtc);
       v.focus.z = damp(v.focus.z, v.targetFocus.z, 4.2, dtc);
       const cp = Math.cos(v.pitch);
+      const radius = v.radius * (configOrbit && size.width >= 1024 ? 1.28 : 1);
       targetPos = new THREE.Vector3(
-        v.focus.x + Math.cos(v.yaw) * cp * v.radius,
-        v.focus.y + Math.sin(v.pitch) * v.radius,
-        v.focus.z + Math.sin(v.yaw) * cp * v.radius
+        v.focus.x + Math.cos(v.yaw) * cp * radius,
+        v.focus.y + Math.sin(v.pitch) * radius,
+        v.focus.z + Math.sin(v.yaw) * cp * radius
       );
       targetFov = size.width / size.height < 0.78 ? 54 : 40;
       look.current.x = damp(look.current.x, v.focus.x, 4.5, dtc);
@@ -178,6 +180,9 @@ function Rig() {
     c.lookAt(look.current);
     const velKick = !freeView && !reduced && quality === "HIGH" ? Math.min(Math.abs(runtime.velocity) * 0.045, 5) : 0;
     c.fov = damp(c.fov, targetFov + velKick, 3.5, dtc);
+    if (configOrbit && !exploreOpen && !runtime.driving && size.width >= 1024) {
+      c.setViewOffset(size.width,size.height,215,0,size.width,size.height);
+    } else if (c.view?.enabled) c.clearViewOffset();
     c.updateProjectionMatrix();
     if (caRef.current?.offset) {
       const o = 0.00035 + (velKick / 7) * 0.004;
@@ -198,6 +203,9 @@ function Rig() {
 /* ------------------------ stage / atmosphere ----------------------- */
 
 function Stage() {
+  const isConfig = useExperience(s => s.phase === "configurator");
+  const signature = useExperience(s => s.config.signature);
+  const signatureColor = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
   const scene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
   const quality = runtime.quality;
@@ -258,12 +266,13 @@ function Stage() {
     <>
       <ambientLight ref={ambLight} intensity={0.5} color="#c7d9ea" />
       <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-6, 3.5, -5]} intensity={0.72} color="#7fd4ff" />
+      <directionalLight position={[-6, 3.5, -5]} intensity={0.72} color={isConfig ? "#ffffff" : "#7fd4ff"} />
       <directionalLight position={[1, 1.4, -8]} intensity={0.42} color="#ffbfa7" />
-      <pointLight position={[0, 1.2, 4]} intensity={0.5} color="#bfe9ff" distance={12} />
+      <pointLight position={[0, 1.2, 4]} intensity={0.5} color={isConfig ? "#ffffff" : "#bfe9ff"} distance={12} />
+      <pointLight position={[2.8, 0.65, 0]} intensity={3.5} color={signatureColor} distance={5} decay={2} />
       {/* Long studio strips reveal roof, shoulder and the wheel crowns in dark chapters. */}
       <rectAreaLight position={[0.2, 5, 1.8]} rotation={[-Math.PI / 2.8, 0, 0]} width={7.5} height={1.1} intensity={5.5} color="#e8f4ff" />
-      <rectAreaLight position={[0, 2.2, -5.8]} rotation={[0, Math.PI, 0]} width={6.8} height={0.45} intensity={3.2} color="#78dfff" />
+      <rectAreaLight position={[0, 2.2, -5.8]} rotation={[0, Math.PI, 0]} width={6.8} height={0.45} intensity={3.2} color={isConfig ? "#fff7ec" : "#78dfff"} />
       <rectAreaLight position={[5.7, 1.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={4.5} height={0.7} intensity={2.2} color="#c5ecff" />
       <Environment resolution={quality === "LOW" ? 64 : 128} frames={1}>
         <Lightformer intensity={2.8} position={[0, 4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[9, 3, 1]} color="#ffffff" />
