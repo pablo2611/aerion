@@ -12,12 +12,23 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 
 - **Carretera en movimiento:** cámara 360° con arrastre, scroll y teclado; ruedas animadas, velocidad gradual y pausa.
 - **Nitro de concepto:** impulso de 4,5 segundos, toma automática de los dos escapes con llamas 3D y regreso a tu cámara anterior. Es un paquete deportivo ficticio de la simulación.
-- **Tu color:** ocho pinturas, acabados, llantas, interiores y firmas luminosas en vivo.
-- **Sonido:** motor deportivo sintetizado que responde a velocidad y nitro. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
+- **Tu color:** ocho pinturas, acabados, interiores y firmas luminosas en vivo.
+- **Llantas intercambiables:** AeroBlade de cinco brazos, Turbine, Monolith perforada y Vector RS de radios dobles. Cambian la geometría real conservando el mismo diámetro, ancho y neumático.
+- **Sonido:** dos modos que responden a velocidad y nitro: Carrera usa una grabación de motor y Eléctrico usa sonido digital. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
 - **Voz en español:** respuestas habladas y comandos como «noche», «autonomía», «sensores» o «relajar».
 - **Atmósfera:** humo de flujo suave, iluminación de estudio y recorrido por nueve capítulos.
 
 La asistencia es una demo local con comandos predefinidos; no conecta con Claude ni con un servicio de IA. El reconocimiento de voz depende del navegador y requiere permiso de micrófono. Los botones funcionan sin micrófono. Las prestaciones, precios y sensores son ficticios.
+
+## Controles de carretera
+
+1. Pulsa **Ver en carretera** y **Activar motor**.
+2. Arrastra para girar 360°, usa la rueda del mouse para acercar o las flechas del teclado para cambiar la vista.
+3. Abre **Velocidad, sonido y color** para alternar **Carrera / Eléctrico**, ajustar velocidad y volumen, o bajar la música a cero.
+4. Pulsa **NITRO** para ver los escapes con fuego y escuchar el impulso. Tras 4,5 segundos vuelve a tu vista; el botón se recarga durante dos segundos más.
+5. **Pausar** detiene la conducción. **Volver a la web** o Escape sale del modo carretera.
+
+Si no escuchas el motor, comprueba que la pestaña no esté silenciada y que el volumen del motor sea mayor que cero. La música se carga aparte para no bloquear el motor.
 
 ## Desarrollo
 
@@ -37,3 +48,5 @@ El modelo comprimido Draco/KTX2 y sus texturas se sirven desde este repositorio.
 Car Concept © 2024 Darmstadt Graphics Group GmbH, por Eric Chadwick — [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). [Modelo original](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept). Se modificaron materiales, luces, cámaras y movimiento; los logotipos de Khronos y 3D Commerce no se muestran. Detalles en [CREDITS](public/models/CREDITS.md).
 
 Imágenes de concepto incluidas en el proyecto original. Referencias y video: Pexels, acreditados en la web. Música ambiental original sintetizada para estos proyectos.
+
+Motor grabado: [racing car engine sound loops](https://opengameart.org/content/racing-car-engine-sound-loops), por domasx2, CC0. Normalizado y adaptado para repetición continua y respuesta a velocidad. [Créditos del audio](public/audio/ENGINE-CREDITS.md).
