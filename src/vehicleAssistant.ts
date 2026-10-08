@@ -31,7 +31,7 @@ export function answerVehicle(question: string, t: Telemetry, previousTopic = ""
 
   if (action && /velocidad|km|kilometros|acelera|vamos a/.test(q) && n !== undefined) {
     if (!t.driving) return answer("Abre Ver en carretera para ajustar la velocidad del coche.", "speed");
-    if (n < 20 || n > 180) return answer("La velocidad de crucero de esta experiencia admite entre 20 y 180 km/h. Puedes pedirme que pare para detenernos.", "speed");
+    if (n < 20 || n > 420) return answer("La velocidad de crucero de esta experiencia admite entre 20 y 420 km/h. Con nitro alcanza 460. Puedes pedirme que pare para detenernos.", "speed");
     return answer(`Ajusto la velocidad a ${Math.round(n)} kilómetros por hora.`, "speed", {type:"speed", value:Math.round(n)});
   }
   if (action && /volumen|sonido|musica/.test(q) && n !== undefined) {

@@ -32,8 +32,12 @@ export const runtime = {
   quality: "HIGH" as Quality,
   driving: false,
   speed: 0,
+  peakSpeed: 0,
   targetSpeed: 80,
   nitroUntil: 0,
+  gear: 1,
+  rpm: 950,
+  shiftUntil: 0,
   cabin: false,
   doorAmount: 0,
   frameStats: { fps: 0, calls: 0, triangles: 0 },
@@ -139,6 +143,7 @@ interface ExperienceState {
   audioError: string;
   driving: boolean;
   drivingPaused: boolean;
+  engineView: boolean;
   cruiseSpeed: number;
   engineMode: "electric" | "race";
   audioVolume: number;
@@ -179,6 +184,7 @@ export const useExperience = create<ExperienceState>((set) => ({
   audioError: "",
   driving: false,
   drivingPaused: false,
+  engineView: false,
   cruiseSpeed: 80,
   engineMode: "race",
   audioVolume: 80,

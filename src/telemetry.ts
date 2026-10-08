@@ -26,7 +26,7 @@ export function readTelemetry() {
     distanceKm: Math.round(t.distanceKm * 100) / 100,
     minutes: Math.floor(t.elapsedSeconds / 60), consumption: Math.round(consumption * 10) / 10,
     powerKw: speed === 0 ? 0 : Math.round(consumption * speed / 100),
-    rpm: Math.round(speed * 95), tireBar: Math.round((2.35 + (t.motorTemp - 30) * .003) * 100) / 100,
+    rpm: runtime.driving ? runtime.rpm : 0, gear: runtime.gear, tireBar: Math.round((2.35 + (t.motorTemp - 30) * .003) * 100) / 100,
     batteryLow: t.battery < 15,
     motorStatus: speed === 0 ? "en reposo" : t.motorTemp > 85 ? "temperatura elevada" : "funcionamiento normal",
     doors: state.doorsOpen ? "abiertas" : "cerradas", lights: state.headlightsOn,

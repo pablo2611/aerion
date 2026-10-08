@@ -17,7 +17,6 @@ import Configurator from "./sections/Configurator";
 import Finale from "./sections/Finale";
 import Footer from "./sections/Footer";
 import ExploreVehicle from "./sections/ExploreVehicle";
-import CabinAssistant from "./sections/CabinAssistant";
 import { Cursor, ChapterRail } from "./components/ui";
 import { runtime, useExperience, detectQuality } from "./store";
 import { CHAPTERS } from "./data/content";
@@ -67,7 +66,6 @@ function VehicleFallback() {
 
 export default function App() {
   const graphicsError = useExperience(s => s.graphicsError);
-  const cabin = useExperience(s => s.cabinView && (s.driving || s.exploreOpen));
   /* ------------------- engine: scroll / pointer / device ------------- */
   useEffect(() => {
     const quality = detectQuality();
@@ -191,7 +189,6 @@ export default function App() {
       <Nav />
       <ExploreVehicle />
       <DriveControls />
-      {cabin && <CabinAssistant/>}
       <main className="relative z-10">
         <Hero />
         <Design />

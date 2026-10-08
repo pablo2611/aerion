@@ -14,23 +14,25 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 - **Cabina sin volante:** pantalla panorámica, consola integrada y luz ambiental. Usa **Entrar a cabina** en el concesionario o **Cabina IA** en carretera para viajar desde dentro. El piloto y los datos de las pantallas son una simulación local.
 - **Calidad automática:** límite de píxeles y de fotogramas, reducción de calidad cuando baja el rendimiento y pausa del 3D y los vídeos cuando no se ven. Si falla WebGL, la página conserva sus contenidos y ofrece reintentar.
 - **Carretera en movimiento:** cámara 360° con arrastre, scroll y teclado; ruedas animadas, velocidad gradual y pausa.
-- **Nitro de concepto:** impulso de 4,5 segundos, toma automática de los dos escapes con llamas 3D y regreso a tu cámara anterior. Es un paquete deportivo ficticio de la simulación.
+- **Nitro de concepto:** impulso de 7 segundos hasta 460 km/h, siete marchas virtuales con bajadas de revoluciones y golpes de escape, toma automática de las llamas 3D y regreso a tu cámara anterior. Crucero regulable hasta 420 km/h; récord de velocidad visible. Es un paquete deportivo ficticio de la simulación.
 - **Tu color:** ocho pinturas, acabados, interiores y firmas luminosas en vivo.
 - **Llantas intercambiables:** AeroBlade de cinco brazos, Turbine, Monolith perforada y Vector RS de radios dobles. Cambian la geometría real conservando el mismo diámetro, ancho y neumático.
-- **Sonido:** dos modos que responden a velocidad y nitro: Carrera usa una grabación de motor y Eléctrico usa sonido digital. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
-- **Asistente de cabina:** preguntas por voz o texto sobre velocidad, batería, autonomía, temperaturas, motor, llantas y recorrido. Comparte datos con la pantalla del coche y permite ajustar velocidad, faros, volumen y piloto. Prueba «¿cómo está el motor?», «¿cuánta batería queda?» o «pon la velocidad a 80». La música y el motor bajan mientras escuchas una respuesta o usas el micrófono.
+- **Sonido:** dos modos que responden a velocidad y nitro: Carrera usa una grabación de motor y Eléctrico usa sonido digital. El motor conserva ralentí al detener el coche y se activa al entrar a carretera. La música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir.
+- **Asistente en la pantalla del coche:** controles anclados a la pantalla 3D, con preguntas por micrófono, botones o entrada escrita y respuestas habladas en español. Consulta velocidad, batería, autonomía, temperaturas, motor, llantas y recorrido; ajusta velocidad, faros, volumen y piloto. Prueba «¿cómo está el motor?» o «pon la velocidad a 420». La música y el motor bajan mientras escuchas una respuesta o usas el micrófono.
+- **Ver motor:** detiene el vehículo y abre una inspección del tren motriz eléctrico, con dos motores traseros, inversor refrigerado, cableado y soportes. Cierra la vista y pulsa Continuar para conducir.
 - **Trasera integrada:** difusor continuo, salidas ovaladas empotradas, reflectores y placa AERION; las llamas salen de las nuevas boquillas.
-- **Atmósfera:** humo con turbulencia y disipación, faros con iluminación sobre la carretera, pintura más limpia y recorrido por nueve capítulos con scroll nativo y progreso visible.
+- **Paisaje costero:** terreno continuo con relieve suave, vegetación en instancias, mar animado, cielo y nubes; la vegetación sigue la distancia del recorrido. Humo con turbulencia, faros sobre la carretera y recorrido por nueve capítulos con scroll nativo.
 
 La asistencia interpreta consultas y comandos locales sobre la simulación; no está conectada a un modelo de IA generativa. El reconocimiento de voz depende del navegador y requiere permiso de micrófono; algunos navegadores procesan esa voz mediante su servicio en línea. La entrada escrita y los botones funcionan sin micrófono. Las prestaciones, precios y sensores son ficticios. El concepto es eléctrico y no utiliza gasolina.
 
 ## Controles de carretera
 
-1. Pulsa **Ver en carretera** y **Activar motor**.
+1. Pulsa **Ver en carretera**; el motor se activa con ese gesto.
 2. Arrastra para girar 360°, usa la rueda del mouse para acercar o las flechas del teclado para cambiar la vista.
 3. Abre **Velocidad, sonido y color** para alternar **Carrera / Eléctrico**, ajustar velocidad y volumen, o bajar la música a cero.
-4. Pulsa **NITRO** para ver los escapes con fuego y escuchar el impulso. Tras 4,5 segundos vuelve a tu vista; el botón se recarga durante dos segundos más.
+4. Pulsa **NITRO** para ver los escapes con fuego y escuchar el impulso. Tras 7 segundos vuelve a tu vista; el botón se recarga durante 2,5 segundos más.
 5. **Pausar** detiene la conducción. **Volver a la web** o Escape sale del modo carretera.
+6. **Ver motor** ofrece la inspección detenida; **Cabina IA** lleva al asistente integrado en la pantalla.
 
 Si no escuchas el motor, comprueba que la pestaña no esté silenciada y que el volumen del motor sea mayor que cero. La música se carga aparte para no bloquear el motor.
 

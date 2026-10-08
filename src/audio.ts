@@ -1,6 +1,7 @@
 /* SonicCore: recorded race engine, procedural electric motor and background music. */
 
 import { useExperience } from "./store";
+import { drivetrainAt } from "./drivetrain";
 class SonicCore {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -15,6 +16,8 @@ class SonicCore {
   private engineLoad: Promise<void> | null = null;
   private lastSpeed = 0;
   private lastBoost = false;
+  private lastGear = 1;
+  private shiftingUntil = 0;
   private speechActive = false;
   private listening = false;
   private speechId = 0;
@@ -239,23 +242,42 @@ class SonicCore {
     this.lastSpeed = v; this.lastBoost = boost;
     if (!this.ctx || !this.droneGain || !this.filter) return;
     const t = this.ctx.currentTime;
-    const speed = Math.min(1.5, Math.max(0, Number.isFinite(v) ? v : 0));
-    const moving = this.driving ? Math.min(1, speed * 12) : Math.min(1, speed * 3);
+    const speed = Math.min(2.6, Math.max(0, Number.isFinite(v) ? v : 0));
+    const moving = this.driving ? 0.48 + Math.min(0.52, speed * 6) : Math.min(1, speed * 3);
+    const drive=drivetrainAt(speed*180);
+    if(this.driving && drive.gear!==this.lastGear){
+      this.lastGear=drive.gear;this.shiftingUntil=performance.now()+180;
+      if(boost)this.exhaustPop(0,.032);
+    }
+    const shifting=performance.now()<this.shiftingUntil;
     const race = this.driving && this.engineMode === "race" && !!this.engineSource;
-    this.engineSource?.playbackRate.setTargetAtTime(0.85 + speed * 0.75 + (boost ? 0.12 : 0), t, 0.24);
-    this.engineGain?.gain.setTargetAtTime(race ? moving * (0.20 + speed * 0.16 + (boost ? 0.05 : 0)) : 0, t, 0.18);
+    this.engineSource?.playbackRate.setTargetAtTime((0.65+drive.rpm/7800*1.35+(boost?.12:0))*(shifting?.76:1),t,.07);
+    this.engineGain?.gain.setTargetAtTime(race ? moving * Math.min(.46,.26+speed*.08+(boost?.05:0))*(shifting?.72:1) : 0,t,.06);
     this.motors.forEach((motor, i) => {
       motor.type = i === 2 ? "triangle" : "sine";
-      motor.frequency.setTargetAtTime((this.driving ? 110 + speed * 330 + (boost ? 120 : 0) : 52 + speed * 145) * (i + 1), t, 0.12);
+      motor.frequency.setTargetAtTime((this.driving ? 60 + Math.min(speed,2.6)*150 + (boost ? 80 : 0) : 52 + speed * 145) * (i + 1), t, 0.12);
     });
-    this.droneGain.gain.setTargetAtTime(race ? 0 : moving * (this.driving ? 0.09 + speed * 0.07 + (boost ? 0.03 : 0) : 0.1 + speed * 0.1), t, 0.18);
+    this.droneGain.gain.setTargetAtTime(race ? 0 : moving * (this.driving ? .10 + Math.min(speed,2.6)*.025 + (boost ? .02 : 0) : .1+speed*.1), t, .18);
     this.filter.frequency.setTargetAtTime(this.driving ? 950 + speed * 1600 + (boost ? 750 : 0) : 260 + speed * 700, t, 0.15);
-    this.windGain?.gain.setTargetAtTime(moving * (this.driving ? speed * 0.02 + (boost ? 0.025 : 0) : 0.008), t, 0.18);
+    this.windGain?.gain.setTargetAtTime(this.driving ? Math.min(speed*.022,.055) : moving*.008,t,.18);
+  }
+
+  private exhaustPop(delay:number,level:number){
+    if(!this.ctx || !this.master || !this.on)return;
+    const ctx=this.ctx,at=ctx.currentTime+delay;
+    const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+    const buffer=ctx.createBuffer(1,Math.floor(ctx.sampleRate*.11),ctx.sampleRate),data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*.018));
+    source.buffer=buffer;filter.type="lowpass";filter.frequency.value=1250;filter.Q.value=.6;
+    gain.gain.setValueAtTime(level,at);gain.gain.exponentialRampToValueAtTime(.0001,at+.105);
+    source.connect(filter);filter.connect(gain);gain.connect(this.master);source.start(at);source.stop(at+.12);
+    source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
   }
 
   nitro() {
     if (!this.ctx || !this.master || !this.on) return;
     const ctx = this.ctx;
+    [0,.14,.31,.55,.83,1.2].forEach((delay,i)=>this.exhaustPop(delay,.065-i*.005));
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
     oscillator.type = this.engineMode === "electric" ? "sine" : "triangle";

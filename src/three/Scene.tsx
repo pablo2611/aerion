@@ -139,10 +139,14 @@ function Rig() {
     const c = camera;
     let targetPos: THREE.Vector3;
     let targetFov: number;
-    if (cabin) {
+    if (runtime.driving && useExperience.getState().engineView) {
+      targetPos=target.set(size.width<768?-4.2:-3.5,size.width<768?3.6:2.75,size.width<768?4.8:2.8);
+      look.current.lerp(focus.set(-1.55,.95,0),1-Math.exp(-4*dtc));
+      targetFov=size.width/size.height<.78?60:43;
+    } else if (cabin) {
       targetPos = target.set(size.width / size.height < 0.78 ? 0.20 : 0.30, 1.29, 0);
       look.current.lerp(focus.set(1.65, 0.99, 0), 1 - Math.exp(-5 * dtc));
-      targetFov = size.width / size.height < 0.78 ? 125 : 77;
+      targetFov = size.width / size.height < 0.78 ? 125 : size.width<768?92:77;
     } else if (freeView) {
       const v = vehicleCamera;
       const idleMs = performance.now() - v.lastInput;
@@ -260,7 +264,7 @@ function Stage() {
   useFrame((_, dt) => {
     const dtc = Math.min(dt, 0.05);
     const showroom = useExperience.getState().exploreOpen && !runtime.driving;
-    const th = showroom ? themeBlend(7, 0) : runtime.driving ? { ...themeBlend(-1,0), bg:["#8fa8af","#8fa8af",0] as const, near:22,far:78,env:1.8,exp:1.1 } : themeBlend(runtime.chapter, runtime.local);
+    const th = showroom ? themeBlend(7, 0) : runtime.driving ? { ...themeBlend(-1,0), bg:["#b6d0de","#b6d0de",0] as const, near:75,far:195,env:1.3,exp:1.0 } : themeBlend(runtime.chapter, runtime.local);
     bg.lerp(new THREE.Color(th.bg[2] ? th.bg[1] : th.bg[0]), 0.06);
     (scene.background as THREE.Color).copy(bg);
     fog.color.copy(bg);
@@ -301,7 +305,7 @@ function Stage() {
         <Lightformer intensity={0.35} position={[8, 1.6, 0]} rotation={[0, -Math.PI / 2, 0]} scale={[5, 0.8, 1]} color="#ffe9d8" />
         <Lightformer intensity={0.2} position={[0, 1, -9]} scale={[7, 0.5, 1]} color="#5fe8ff" />
       </Environment>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} scale={[driving?3:1,driving?.15:1,1]}>
         <planeGeometry args={[80, 80]} />
         <shaderMaterial ref={floorMat} vertexShader={FLOOR.vertex} fragmentShader={FLOOR.fragment} uniforms={floorUniforms} />
       </mesh>
@@ -339,7 +343,7 @@ export default function Scene() {
         frameloop="demand"
         dpr={1}
         gl={{ antialias: true, powerPreference: "default", alpha: false, stencil: false }}
-        camera={{ fov: 46, near: 0.035, far: 90, position: [0, 1.55, 11.5] }}
+        camera={{ fov: 46, near: 0.035, far: 240, position: [0, 1.55, 11.5] }}
         shadows={quality === "HIGH" ? "percentage" : false}
         onCreated={({gl}) => {
           gl.domElement.addEventListener("webglcontextlost", () => {

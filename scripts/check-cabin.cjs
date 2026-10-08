@@ -14,6 +14,12 @@ const runtime={driving:true,speed:80,telemetry:{battery:84,motorTemp:32,batteryT
 const state={drivingPaused:false,autonomous:true,doorsOpen:false,headlightsOn:true,engineMode:'race',audioVolume:80};
 const telemetry=moduleAt('telemetry.ts',{'./store':{runtime,useExperience:{getState:()=>state}}});
 const {answerVehicle:ask}=moduleAt('vehicleAssistant.ts');
+const {drivetrainAt,nextRoadSpeed}=moduleAt('drivetrain.ts');
+let boosted=80;for(let i=0;i<140;i++)boosted=nextRoadSpeed(boosted,460,.05,true);
+assert.equal(boosted,460);assert.equal(drivetrainAt(boosted).gear,7);
+assert.ok(drivetrainAt(54).rpm>drivetrainAt(56).rpm,'Upshifting drops RPM');
+let stopped=460;for(let i=0;i<140;i++)stopped=nextRoadSpeed(stopped,0,.05,false);assert.equal(stopped,0);
+assert.deepEqual(ask('Pon la velocidad a 420',telemetry.readTelemetry()).command,{type:'speed',value:420});
 let t=telemetry.readTelemetry();
 assert.match(ask('¿A qué velocidad vamos y cuánta batería queda?',t).text,/80 kilómetros.*84 por ciento/);
 assert.match(ask('¿Cómo va la gasolina?',t).text,/no utiliza gasolina/);
@@ -36,19 +42,20 @@ runtime.driving=false;assert.equal(telemetry.readTelemetry().speed,0);assert.equ
 assert.equal(ask('Pon velocidad a 80',telemetry.readTelemetry()).command,undefined);
 console.log('PASS: assistant commands, compound questions, context, negations, limits and shared telemetry');
 
-const code=fs.readFileSync(require('node:path').join(__dirname,'../src/audio.ts'),'utf8').replace(/^import .*store.*;$/m,'const useExperience={setState(s){Object.assign(globalThis.audioState,s)}};').replaceAll('import.meta.env.BASE_URL','"./"').replace('export const sonic','const sonic')+'\nglobalThis.engine=sonic;';
+const code=fs.readFileSync(require('node:path').join(__dirname,'../src/audio.ts'),'utf8').replace(/^import .*store.*;$/m,'const useExperience={setState(s){Object.assign(globalThis.audioState,s)}};').replace(/^import .*drivetrain.*;$/m,'const drivetrainAt=globalThis.driveAt;').replaceAll('import.meta.env.BASE_URL','"./"').replace('export const sonic','const sonic')+'\nglobalThis.engine=sonic;';
 class Param{constructor(){this.value=0;}setTargetAtTime(v){this.value=v;}setValueAtTime(v){this.value=v;}exponentialRampToValueAtTime(v){this.value=v;}cancelScheduledValues(){}}
 class Node{constructor(){for(const key of ['gain','frequency','detune','Q','threshold','ratio','playbackRate'])this[key]=new Param;}connect(){}disconnect(){}start(){}stop(){}}
 class Context{constructor(){this.currentTime=0;this.sampleRate=44100;this.destination={};this.state='suspended';}createGain(){return new Node}createBiquadFilter(){return new Node}createOscillator(){return new Node}createDynamicsCompressor(){return new Node}createBuffer(c,n){return {getChannelData(){return new Float32Array(n)}}}createBufferSource(){return new Node}async decodeAudioData(){return {duration:.814}}async resume(){this.state='running'}async suspend(){this.state='suspended'}}
 class Audio{constructor(){this.volume=1;this.paused=true;}async play(){this.paused=false;}pause(){this.paused=true;}}
 class Utterance{constructor(text){this.text=text}}
 let lastSpeech;
-const c={window:{AudioContext:Context,setTimeout,speechSynthesis:{cancel(){},getVoices(){return[]},speak(u){lastSpeech=u}}},audioState:{},Audio,SpeechSynthesisUtterance:Utterance,clearTimeout,AbortSignal,document:{body:{appendChild(){}},addEventListener(){}},Math,Float32Array,fetch:async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(10)})};
+const c={window:{AudioContext:Context,setTimeout,speechSynthesis:{cancel(){},getVoices(){return[]},speak(u){lastSpeech=u}}},performance,driveAt:drivetrainAt,audioState:{},Audio,SpeechSynthesisUtterance:Utterance,clearTimeout,AbortSignal,document:{body:{appendChild(){}},addEventListener(){}},Math,Float32Array,fetch:async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(10)})};
 vm.runInNewContext(ts.transpile(code,{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}),c);
 (async()=>{
  const e=c.engine;e.setDrivingMix(true);assert.equal(await e.toggle(),true);await e.engineLoad;assert.equal(e.ctx.state,'running');assert.ok(e.engineSource.loop);assert.ok(Math.abs(e.music.volume-.064)<1e-8);
  e.hum(1);const normal=e.engineSource.playbackRate.value;e.hum(1,true);assert.ok(e.engineSource.playbackRate.value>normal);assert.ok(e.engineGain.gain.value<.5);
- e.hum(0);assert.equal(e.engineGain.gain.value,0);assert.equal(e.windGain.gain.value,0);
+ e.hum(0);assert.ok(e.engineGain.gain.value>.08,'Stopped car retains audible idle, including shift attenuation');assert.equal(e.windGain.gain.value,0);
+ e.hum(460/180,true);assert.ok(e.engineGain.gain.value<=.46);assert.ok(e.engineSource.playbackRate.value<2.3);
  e.setEngineMode('electric');e.hum(.8);assert.ok(e.droneGain.gain.value>0);assert.equal(e.engineGain.gain.value,0);
  e.setEngineMode('race');assert.equal(e.droneGain.gain.value,0);
  e.voiceEnabled=true;let completed=0;e.speak('Estado del motor',()=>completed++);const first=lastSpeech;assert.ok(e.music.volume<.064);assert.ok(e.master.gain.value<.8);

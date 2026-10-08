@@ -11,6 +11,7 @@ import { createWheelDesigns } from "./WheelDesigns";
 import Cabin from "./Cabin";
 import VehicleLights from "./VehicleLights";
 import RearBody from "./RearBody";
+import EngineBay from "./EngineBay";
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -209,6 +210,10 @@ export default function Car() {
     const t = runtime.local;
     const heroT = runtime.bootAt ? clamp((now - runtime.bootAt) / 4200, 0, 1) : 0;
     const explore = useExperience.getState().exploreOpen;
+    const inspecting=runtime.driving && useExperience.getState().engineView;
+    ["BodyRearPanelsColor1","BodyRearwindow","InteriorRearHatch","InteriorRearPanels"].forEach(name=>{
+      const node=prepared.root.getObjectByName(name);if(node)node.visible=!inspecting;
+    });
     const doorTarget = explore && useExperience.getState().doorsOpen && !runtime.driving ? 1 : 0;
     runtime.doorAmount = runtime.reduced ? doorTarget : damp(runtime.doorAmount, doorTarget, 4.2, dtc);
     prepared.doors.forEach(({node,rest,sign}) => {
@@ -307,6 +312,7 @@ export default function Car() {
       <Cabin />
       <VehicleLights />
       <RearBody />
+      <EngineBay />
       <Exhaust />
     </group>
   );
