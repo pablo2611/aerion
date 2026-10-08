@@ -4,7 +4,7 @@ import { CHAPTERS } from "../data/content";
 import { INTELLIGENCE_DEMOS } from "../data/intelligence";
 import { SectionShell } from "../components/ui";
 import { useAIDemo } from "../hooks/useAIDemo";
-import { useExperience } from "../store";
+import { setVehicleView, useExperience } from "../store";
 
 const STAGE_LABELS = {
   ready: "Ready",
@@ -51,6 +51,9 @@ export default function Interior() {
           </div>
 
           <VoiceControls />
+          <button className="mt-4 w-fit border border-ion bg-[#06131c] px-5 py-3 text-sm text-ion" onClick={() => { useExperience.getState().setExplore(true); setVehicleView("interior"); }}>
+            Entrar a la cabina 3D · sin volante
+          </button>
           {/* The HMI is a functional interaction surface, not a detached marketing card. */}
           <div className="mt-auto grid items-end gap-4 lg:grid-cols-12 lg:gap-8">
             <div className="hidden lg:col-span-4 lg:block">

@@ -10,13 +10,16 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 
 ## Explora
 
+- **Puertas articuladas:** apertura y cierre sobre las bisagras del modelo. Las llantas se detienen al abrirlas y las puertas se cierran al salir a carretera.
+- **Cabina sin volante:** pantalla panorámica, consola integrada y luz ambiental. Usa **Entrar a cabina** en el concesionario o **Cabina IA** en carretera para viajar desde dentro. El piloto y los datos de las pantallas son una simulación local.
+- **Calidad automática:** límite de píxeles y de fotogramas, reducción de calidad cuando baja el rendimiento y pausa del 3D y los vídeos cuando no se ven. Si falla WebGL, la página conserva sus contenidos y ofrece reintentar.
 - **Carretera en movimiento:** cámara 360° con arrastre, scroll y teclado; ruedas animadas, velocidad gradual y pausa.
 - **Nitro de concepto:** impulso de 4,5 segundos, toma automática de los dos escapes con llamas 3D y regreso a tu cámara anterior. Es un paquete deportivo ficticio de la simulación.
 - **Tu color:** ocho pinturas, acabados, interiores y firmas luminosas en vivo.
 - **Llantas intercambiables:** AeroBlade de cinco brazos, Turbine, Monolith perforada y Vector RS de radios dobles. Cambian la geometría real conservando el mismo diámetro, ancho y neumático.
 - **Sonido:** dos modos que responden a velocidad y nitro: Carrera usa una grabación de motor y Eléctrico usa sonido digital. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
 - **Voz en español:** respuestas habladas y comandos como «noche», «autonomía», «sensores» o «relajar».
-- **Atmósfera:** humo de flujo suave, iluminación de estudio y recorrido por nueve capítulos.
+- **Atmósfera:** humo con turbulencia y disipación, faros con iluminación sobre la carretera, pintura más limpia y recorrido por nueve capítulos con scroll nativo y progreso visible.
 
 La asistencia es una demo local con comandos predefinidos; no conecta con Claude ni con un servicio de IA. El reconocimiento de voz depende del navegador y requiere permiso de micrófono. Los botones funcionan sin micrófono. Las prestaciones, precios y sensores son ficticios.
 

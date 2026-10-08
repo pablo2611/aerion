@@ -3,13 +3,12 @@ import { VEHICLE_HOTSPOTS } from "../data/content";
 import { setVehicleHotspot, setVehicleView, type VehicleView, vehicleCamera, useExperience } from "../store";
 
 const VIEWS: { id: VehicleView; label: string }[] = [
-  { id: "front", label: "Front" },
-  { id: "front3q", label: "Front 3/4" },
-  { id: "side", label: "Side" },
-  { id: "rear3q", label: "Rear 3/4" },
-  { id: "rear", label: "Rear" },
-  { id: "detail", label: "Detail" },
-  { id: "interior", label: "Interior" },
+  { id: "front", label: "Frente" },
+  { id: "front3q", label: "Perspectiva" },
+  { id: "side", label: "Lateral" },
+  { id: "rear", label: "Trasera" },
+  { id: "detail", label: "Detalle" },
+  { id: "interior", label: "Entrar a cabina" },
 ];
 
 const PIN_POSITIONS = [
@@ -26,6 +25,11 @@ export default function ExploreVehicle() {
   const rolling = useExperience(s => s.showroomWheels);
   const setRolling = useExperience(s => s.setShowroomWheels);
   const reduced = useExperience(s => s.reducedMotion);
+  const doorsOpen = useExperience(s => s.doorsOpen);
+  const cabin = useExperience(s => s.cabinView);
+  const headlights = useExperience(s => s.headlightsOn);
+  const quality = useExperience(s => s.quality);
+  const [selectedView, setView] = useState<VehicleView>("front3q");
   const active = useExperience((s) => s.activeHotspot);
   const setExplore = useExperience((s) => s.setExplore);
   const setHotspot = useExperience((s) => s.setHotspot);
@@ -67,6 +71,7 @@ export default function ExploreVehicle() {
     setVehicleView("front3q");
   };
   const onDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (cabin) return;
     drag.current = { active: true, x: e.clientX, y: e.clientY, at: performance.now() };
     e.currentTarget.setPointerCapture(e.pointerId);
     vehicleCamera.lastInput = performance.now();
@@ -96,35 +101,45 @@ export default function ExploreVehicle() {
       {/* This transparent surface drives the camera; controls live above it. */}
       <div
         className="absolute inset-0 touch-none cursor-grab active:cursor-grabbing"
+        tabIndex={0}
+        role="group"
         style={{ touchAction: "none" }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
         onWheel={(e) => {
-          e.preventDefault();
+          if (cabin) return;
           vehicleCamera.targetRadius = Math.max(2.45, Math.min(9.5, vehicleCamera.targetRadius + e.deltaY * 0.006));
           vehicleCamera.lastInput = performance.now();
         }}
-        aria-label="Drag to rotate the AERION ONE. Use mouse wheel to zoom."
+        onKeyDown={e => {
+          if (cabin) return;
+          if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)) e.preventDefault();
+          if (e.key === "ArrowLeft" || e.key === "ArrowRight") vehicleCamera.targetYaw += e.key === "ArrowLeft" ? 0.2 : -0.2;
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") vehicleCamera.targetPitch = Math.max(-0.1,Math.min(0.48,vehicleCamera.targetPitch+(e.key === "ArrowUp"?0.08:-0.08)));
+          vehicleCamera.lastInput = performance.now();
+        }}
+        aria-label="Girar coche: arrastra o usa las flechas. Rueda del ratón para acercar."
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-[22] flex items-start justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-10 sm:pt-7">
         <div className="explore-chrome pointer-events-auto max-w-[230px] border border-white/20 bg-black/30 px-4 py-3 backdrop-blur-sm sm:max-w-none">
           <p className="font-mono-tech text-[12px] tracking-[0.35em] text-ion">AERION ONE / SHOWROOM</p>
-          <p className="mt-1.5 font-display text-sm font-bold tracking-wide">CONCESIONARIO — 360°</p>
+          <p className="mt-1.5 font-display text-sm font-bold tracking-wide">{cabin ? "CABINA AUTÓNOMA" : "CONCESIONARIO — 360°"}</p>
+          <p className="mt-2 text-xs text-white/80">{cabin ? "Sin volante · pantallas integradas" : "Abre las puertas y descubre el interior"}</p>
         </div>
         <button
           onClick={() => { setExplore(false); setHotspot(null); }}
           className="pointer-events-auto explore-close flex h-11 items-center gap-3 border border-white/25 bg-black/30 px-4 font-mono-tech text-[12px] tracking-[0.28em] uppercase backdrop-blur-sm transition-colors hover:border-ion hover:text-ion"
           data-cursor
         >
-          <span className="text-lg leading-none">×</span> Close
+          <span className="text-lg leading-none">×</span> Cerrar
         </button>
       </div>
 
       {/* Discreet pins align to the default front 3/4 composition. The list below is the accessible counterpart. */}
-      <div className={`absolute inset-0 z-[23] transition-opacity duration-400 ${active || !pinsVisible ? "pointer-events-none opacity-0" : ""}`} aria-hidden={Boolean(active) || !pinsVisible}>
+      <div className={`absolute inset-0 z-[23] transition-opacity duration-400 ${active || cabin || !pinsVisible ? "pointer-events-none opacity-0" : ""}`} aria-hidden={Boolean(active) || cabin || !pinsVisible}>
         {VEHICLE_HOTSPOTS.map((hotspot, i) => (
           <button
             key={hotspot.id}
@@ -137,12 +152,13 @@ export default function ExploreVehicle() {
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[24] px-5 pb-[max(1.1rem,env(safe-area-inset-bottom))] sm:px-10 sm:pb-7">
-        <div className="pointer-events-auto mx-auto flex max-w-max flex-wrap justify-center gap-1 border border-white/20 bg-[#06090e]/80 p-1.5 backdrop-blur-md">
+      <div className="showroom-controls pointer-events-none absolute inset-x-0 bottom-0 z-[24] px-3 pb-[max(0.8rem,env(safe-area-inset-bottom))] sm:px-10 sm:pb-6">
+        <div className="showroom-views pointer-events-auto mx-auto flex max-w-max flex-wrap justify-center gap-1 border border-white/20 bg-[#06090e]/95 p-1.5">
           {VIEWS.map((view) => (
             <button
               key={view.id}
-              onClick={() => { setHotspot(null); setPinsVisible(view.id === "front3q"); setVehicleView(view.id); }}
+              onClick={() => { setView(view.id); setHotspot(null); setPinsVisible(false); setVehicleView(view.id); }}
+              aria-pressed={view.id === "interior" ? cabin : !cabin && view.id === selectedView}
               className="px-2.5 py-2 font-mono-tech text-[12px] tracking-[0.19em] uppercase text-white/65 transition-colors hover:bg-white/10 hover:text-ion sm:px-3 sm:text-[12px]"
               data-cursor
             >
@@ -150,13 +166,17 @@ export default function ExploreVehicle() {
             </button>
           ))}
         </div>
-        <div className="pointer-events-auto mt-2 flex justify-center">
-          <button onClick={() => setRolling(!rolling)} disabled={reduced} aria-pressed={rolling && !reduced} className="bg-[#081018]/95 px-4 py-2 text-sm text-white transition-colors hover:bg-[#18313b] disabled:opacity-60" data-cursor>
-            {reduced ? "Llantas detenidas · movimiento reducido" : rolling ? "Pausar llantas" : "Activar llantas"}
+        <div className="showroom-actions pointer-events-auto mt-2 flex flex-wrap justify-center gap-2">
+          <button onClick={() => { useExperience.setState({ doorsOpen: !doorsOpen }); setPinsVisible(false); }} aria-pressed={doorsOpen}>
+            {doorsOpen ? "Cerrar puertas" : "Abrir puertas"}
+          </button>
+          <button onClick={() => useExperience.setState({headlightsOn: !headlights})} aria-pressed={headlights}>{headlights ? "Apagar faros" : "Encender faros"}</button>
+          <button onClick={() => setRolling(!rolling)} disabled={reduced || doorsOpen} aria-pressed={rolling && !reduced && !doorsOpen} data-cursor>
+            {doorsOpen || reduced ? "Llantas detenidas" : rolling ? "Pausar llantas" : "Activar llantas"}
           </button>
         </div>
-        <p className="pointer-events-none mt-3 text-center font-mono-tech text-[12px] tracking-[0.28em] text-white/70 sm:text-[12px]">
-          ARRASTRA PARA GIRAR · SCROLL PARA ACERCAR
+        <p className="pointer-events-none mt-2 text-center text-xs text-white/85">
+          {cabin ? "Conducción IA conceptual · selecciona una vista para salir" : "Arrastra para girar · scroll para acercar"} · {quality === "LOW" ? "Modo ligero" : "Calidad automática"}
         </p>
       </div>
 

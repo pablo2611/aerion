@@ -131,6 +131,7 @@ export function CineVideo({
   const wrap = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
+  const inView = useRef(false);
 
   useEffect(() => {
     const el = wrap.current;
@@ -138,17 +139,25 @@ export function CineVideo({
     const io = new IntersectionObserver(
       (entries) => {
         const e = entries[0];
+        inView.current = e.isIntersecting;
         if (e.isIntersecting) setLoaded(true);
         const v = video.current;
         if (v) {
-          if (e.isIntersecting) v.play().catch(() => {});
+          if (e.isIntersecting && !document.hidden && !prefersReduced()) v.play().catch(() => {});
           else v.pause();
         }
       },
-      { rootMargin: "250px" }
+      { rootMargin: "0px" }
     );
     io.observe(el);
-    return () => io.disconnect();
+    const syncVideo = () => {
+      const v = video.current;
+      if (!v) return;
+      if (inView.current && !document.hidden && !prefersReduced()) void v.play().catch(() => {});
+      else v.pause();
+    };
+    document.addEventListener("visibilitychange",syncVideo);
+    return () => { io.disconnect(); document.removeEventListener("visibilitychange",syncVideo); };
   }, []);
 
   return (
@@ -165,6 +174,7 @@ export function CineVideo({
           loop
           playsInline
           preload="metadata"
+          onLoadedData={e => { if (inView.current && !document.hidden && !prefersReduced()) void e.currentTarget.play().catch(() => {}); }}
           aria-hidden="true"
         />
       )}
@@ -324,7 +334,7 @@ export function SectionShell({
   style?: CSSProperties;
 }) {
   return (
-    <section id={id} data-chapter={chapter} className="relative" style={{ height, ...style }} aria-label={chapter}>
+    <section id={id} data-chapter={chapter} className="story-chapter relative" style={{ "--chapter-height": height, "--chapter-mobile-height": `${Math.max(135, parseFloat(height) * 0.82)}svh`, ...style } as CSSProperties} aria-label={chapter}>
       <div className="sticky top-0 h-[100dvh] min-h-[560px] w-full overflow-hidden">{children}</div>
     </section>
   );

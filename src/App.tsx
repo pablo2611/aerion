@@ -33,6 +33,10 @@ class SceneBoundary extends Component<{ children: ReactNode }, { err: boolean }>
   static getDerivedStateFromError() {
     return { err: true };
   }
+  componentDidCatch() {
+    runtime.driving = false;
+    useExperience.setState({ graphicsError: true, modelReady: false, driving: false, exploreOpen: false });
+  }
   render() {
     if (this.state.err)
       return (
@@ -44,9 +48,10 @@ class SceneBoundary extends Component<{ children: ReactNode }, { err: boolean }>
 
 function VehicleFallback() {
   const ready = useExperience((state) => state.modelReady);
+  const failed = useExperience(state => state.graphicsError);
   return (
     <div
-      className={`vehicle-fallback pointer-events-none fixed inset-0 z-[1] flex items-center justify-center transition-opacity duration-1000 ${ready ? "opacity-0" : "opacity-100"}`}
+      className={`vehicle-fallback pointer-events-none fixed inset-0 z-[1] flex items-center justify-center transition-opacity duration-1000 ${ready && !failed ? "opacity-0" : "opacity-100"}`}
       aria-hidden={ready}
     >
       <img
@@ -60,6 +65,7 @@ function VehicleFallback() {
 }
 
 export default function App() {
+  const graphicsError = useExperience(s => s.graphicsError);
   /* ------------------- engine: scroll / pointer / device ------------- */
   useEffect(() => {
     const quality = detectQuality();
@@ -77,7 +83,7 @@ export default function App() {
 
     const measure = () => {
       const secs = Array.from(document.querySelectorAll<HTMLElement>("[data-chapter]"));
-      runtime.chapters = secs.map((s) => ({ id: s.dataset.chapter!, top: s.offsetTop, height: s.offsetHeight }));
+      runtime.chapters = secs.map((s) => ({ id: s.dataset.chapter!, top: s.getBoundingClientRect().top + window.scrollY, height: s.offsetHeight }));
       if (secs.length) {
         const first = runtime.chapters[0];
         const last = runtime.chapters[secs.length - 1];
@@ -95,8 +101,9 @@ export default function App() {
       lastY = y;
       runtime.velocity = runtime.velocity * 0.86 + inst * 0.14;
       runtime.progress = clamp((y - runtime.trackStart) / (runtime.trackEnd - runtime.trackStart), 0, 1);
+      document.documentElement.style.setProperty("--journey-progress", String(runtime.progress));
 
-      const probe = y + window.innerHeight * 0.55;
+      const probe = y + window.innerHeight * 0.12;
       let ch = -1;
       for (let i = 0; i < runtime.chapters.length; i++) {
         if (probe >= runtime.chapters[i].top) ch = i;
@@ -125,6 +132,8 @@ export default function App() {
     };
 
     let ticking = false;
+    let scrollFrame = 0;
+    let resizeTimer = 0;
     const onScrollRaf = () => {
       ticking = false;
       onScroll();
@@ -132,7 +141,7 @@ export default function App() {
     const onScrollEvt = () => {
       if (!ticking) {
         ticking = true;
-        requestAnimationFrame(onScrollRaf);
+        scrollFrame = requestAnimationFrame(onScrollRaf);
       }
     };
     const onPointer = (e: MouseEvent) => {
@@ -142,14 +151,20 @@ export default function App() {
 
     measure();
     onScroll();
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => { measure(); onScroll(); }, 140);
+    };
     window.addEventListener("scroll", onScrollEvt, { passive: true });
-    window.addEventListener("resize", measure);
+    window.addEventListener("resize", onResize);
     window.addEventListener("mousemove", onPointer, { passive: true });
     const t = setTimeout(measure, 1200); // after fonts / images settle
     return () => {
       clearTimeout(t);
+      clearTimeout(resizeTimer);
+      cancelAnimationFrame(scrollFrame);
       window.removeEventListener("scroll", onScrollEvt);
-      window.removeEventListener("resize", measure);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onPointer);
       mq.removeEventListener("change", syncReduced);
     };
@@ -164,6 +179,11 @@ export default function App() {
         <Scene />
       </SceneBoundary>
       <VehicleFallback />
+      {graphicsError && <div className="graphics-recovery" role="status">
+        <p>La vista 3D se ha pausado. Puedes seguir explorando la web.</p>
+        <button onClick={() => window.location.reload()}>Reintentar vista 3D</button>
+      </div>}
+      <div className="journey-progress" aria-hidden="true"/>
       <div className="noise-overlay" aria-hidden="true" />
       <Loader />
       <Nav />

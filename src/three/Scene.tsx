@@ -2,8 +2,9 @@ import * as THREE from "three";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, ChromaticAberration, SMAA } from "@react-three/postprocessing";
-import { runtime, useExperience, DPR, vehicleCamera, driveCamera } from "../store";
+import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+import { runtime, useExperience, vehicleCamera, driveCamera } from "../store";
+import PerformanceBudget from "./PerformanceBudget";
 import Car from "./Car";
 import Road from "./Road";
 import Showroom from "./Showroom";
@@ -122,9 +123,10 @@ function Rig() {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const size = useThree((s) => s.size);
   const look = useRef(new THREE.Vector3(0, 0.55, 0));
-  const caRef = useRef<any>(null);
-  const quality = runtime.quality;
+  const quality = useExperience(s => s.quality);
   const exploreOpen = useExperience((s) => s.exploreOpen);
+  const target = useMemo(() => new THREE.Vector3(), []);
+  const focus = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, dt) => {
     const dtc = Math.min(dt, 0.05);
@@ -132,10 +134,16 @@ function Rig() {
     const reduced = runtime.reduced;
     const configOrbit = !runtime.driving && runtime.chapter === 7 && vehicleCamera.configActive;
     const freeView = exploreOpen || configOrbit;
+    const cabin = useExperience.getState().cabinView && (exploreOpen || runtime.driving);
+    runtime.cabin = cabin;
     const c = camera;
     let targetPos: THREE.Vector3;
     let targetFov: number;
-    if (freeView) {
+    if (cabin) {
+      targetPos = target.set(0.30, 1.29, 0);
+      look.current.lerp(focus.set(1.65, 1.04, 0), 1 - Math.exp(-5 * dtc));
+      targetFov = size.width / size.height < 0.78 ? 125 : 77;
+    } else if (freeView) {
       const v = vehicleCamera;
       const idleMs = performance.now() - v.lastInput;
       if (!reduced && idleMs < 1200) {
@@ -154,7 +162,7 @@ function Rig() {
       const cp = Math.cos(v.pitch);
       const portrait = size.width / size.height < 0.78;
       const radius = v.radius * (configOrbit ? 1.28 : 1) * (portrait ? configOrbit ? 1.35 : 1.75 : 1);
-      targetPos = new THREE.Vector3(
+      targetPos = target.set(
         v.focus.x + Math.cos(v.yaw) * cp * radius,
         v.focus.y + Math.sin(v.pitch) * radius,
         v.focus.z + Math.sin(v.yaw) * cp * radius
@@ -173,8 +181,8 @@ function Rig() {
       v.pitch = damp(v.pitch, pitch, 3.2, dtc);
       v.radius = damp(v.radius, radius, 3.2, dtc);
       const focusX = boost ? -2.7 : 0;
-      look.current.lerp(new THREE.Vector3(focusX, boost ? 0.38 : 0.65, 0), 1 - Math.exp(-3.2 * dtc));
-      targetPos = new THREE.Vector3(
+      look.current.lerp(focus.set(focusX, boost ? 0.38 : 0.65, 0), 1 - Math.exp(-3.2 * dtc));
+      targetPos = target.set(
         look.current.x + Math.cos(v.yaw) * Math.cos(v.pitch) * v.radius,
         look.current.y + Math.sin(v.pitch) * v.radius,
         Math.sin(v.yaw) * Math.cos(v.pitch) * v.radius
@@ -182,35 +190,30 @@ function Rig() {
       targetFov = size.width < 768 ? 54 : 43;
     } else {
       const cam = camAt(runtime.chapter, runtime.local, now, size.width, size.height);
-      targetPos = new THREE.Vector3(cam.x, cam.y, cam.z);
+      targetPos = target.set(cam.x, cam.y, cam.z);
       targetFov = cam.fov;
       look.current.x = damp(look.current.x, cam.tx, 3.2, dtc);
       look.current.y = damp(look.current.y, cam.ty, 3.2, dtc);
       look.current.z = damp(look.current.z, cam.tz, 3.2, dtc);
     }
-    const k = freeView ? 4.2 : 2.6;
+    const k = reduced ? 14 : cabin ? 4.5 : freeView ? 5.5 : 4;
     c.position.x = damp(c.position.x, targetPos.x, k, dtc);
     c.position.y = damp(c.position.y, targetPos.y, k, dtc);
     c.position.z = damp(c.position.z, targetPos.z, k, dtc);
     c.lookAt(look.current);
-    const velKick = !freeView && !reduced && quality === "HIGH" ? Math.min(Math.abs(runtime.velocity) * 0.045, 5) : 0;
+    runtime.velocity = damp(runtime.velocity, 0, 7, dtc);
+    const velKick = !freeView && !cabin && !reduced && quality === "HIGH" ? Math.min(Math.abs(runtime.velocity) * 0.012, 1.2) : 0;
     c.fov = damp(c.fov, targetFov + velKick, 3.5, dtc);
     if (runtime.chapter === 7 && !exploreOpen && !runtime.driving) {
       c.setViewOffset(size.width,size.height,size.width >= 1024 ? 215 : 0,size.width < 1024 ? size.height*0.12 : 0,size.width,size.height);
     } else if (c.view?.enabled) c.clearViewOffset();
     c.updateProjectionMatrix();
-    if (caRef.current?.offset) {
-      const o = 0.00035 + (velKick / 7) * 0.004;
-      caRef.current.offset.set(o, o * 0.6);
-    }
   });
 
   return quality === "LOW" ? null : (
     <EffectComposer multisampling={0}>
-      {quality === "HIGH" && <SMAA />}
-      <Bloom mipmapBlur intensity={quality === "HIGH" ? 0.3 : 0.2} luminanceThreshold={1.25} luminanceSmoothing={0.28} />
-      {quality === "HIGH" && <ChromaticAberration ref={caRef} />}
-      <Vignette eskil={false} offset={0.26} darkness={0.62} />
+      <Bloom mipmapBlur intensity={0.16} luminanceThreshold={1.65} luminanceSmoothing={0.4} resolutionScale={0.5} />
+      <Vignette eskil={false} offset={0.3} darkness={0.38} />
     </EffectComposer>
   );
 }
@@ -224,7 +227,9 @@ function Stage() {
   const signatureColor = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
   const scene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
-  const quality = runtime.quality;
+  const quality = useExperience(s => s.quality);
+  const phase = useExperience(s => s.phase);
+  const driving = useExperience(s => s.driving);
   const floorMat = useRef<THREE.ShaderMaterial>(null);
   const keyLight = useRef<THREE.DirectionalLight>(null);
   const ambLight = useRef<THREE.AmbientLight>(null);
@@ -282,7 +287,7 @@ function Stage() {
   return (
     <>
       <ambientLight ref={ambLight} intensity={0.5} color="#c7d9ea" />
-      <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" castShadow shadow-mapSize={[1024, 1024]} />
+      <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" castShadow={quality === "HIGH"} shadow-mapSize={[512, 512]} shadow-normalBias={0.035} />
       <directionalLight position={[-6, 3.5, -5]} intensity={0.35} color={isConfig ? "#ffffff" : "#7fd4ff"} />
       <directionalLight position={[1, 1.4, -8]} intensity={0.22} color="#ffbfa7" />
       <pointLight position={[2.8, 0.65, 0]} intensity={0.18} color={signatureColor} distance={5} decay={2} />
@@ -305,11 +310,9 @@ function Stage() {
       </Suspense>
       <Showroom />
       <Road />
-      <group visible={!exploring}>
-        <AirFlow />
-        <EnergyFlow />
-        <HoloField />
-      </group>
+      {!exploring && (phase === "aero" || driving) && <AirFlow />}
+      {!exploring && !driving && phase === "battery" && <EnergyFlow />}
+      {!exploring && !driving && phase === "intelligence" && <HoloField />}
     </>
   );
 }
@@ -326,15 +329,26 @@ export default function Scene() {
   const quality = useExperience((s) => s.quality);
   const exploreOpen = useExperience((s) => s.exploreOpen);
   const driving = useExperience((s) => s.driving);
+  const phase = useExperience(s => s.phase);
+  const failed = useExperience(s => s.graphicsError);
+  const active = visible && (exploreOpen || driving || !["interior", "intelligence"].includes(phase));
+  if (failed) return null;
   return (
     <div className={`fixed inset-0 ${driving ? "z-[55] pointer-events-none" : exploreOpen ? "z-[20] pointer-events-auto" : "z-0 pointer-events-none"}`} aria-hidden={!exploreOpen && !driving}>
       <Canvas
-        frameloop={visible ? "always" : "demand"}
-        dpr={DPR[quality]}
-        gl={{ antialias: quality !== "LOW", powerPreference: "high-performance", alpha: false }}
-        camera={{ fov: 46, near: 0.1, far: 90, position: [0, 1.55, 11.5] }}
-        shadows={quality !== "LOW"}
+        frameloop="demand"
+        dpr={1}
+        gl={{ antialias: true, powerPreference: "default", alpha: false, stencil: false }}
+        camera={{ fov: 46, near: 0.035, far: 90, position: [0, 1.55, 11.5] }}
+        shadows={quality === "HIGH" ? "percentage" : false}
+        onCreated={({gl}) => {
+          gl.domElement.addEventListener("webglcontextlost", () => {
+            runtime.driving = false;
+            useExperience.setState({ graphicsError: true, modelReady: false, driving: false, exploreOpen: false, cabinView: false });
+          }, {once:true});
+        }}
       >
+        <PerformanceBudget active={active}/>
         <Stage />
         <Rig />
       </Canvas>

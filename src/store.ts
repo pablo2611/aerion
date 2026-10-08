@@ -34,6 +34,9 @@ export const runtime = {
   speed: 0,
   targetSpeed: 80,
   nitroUntil: 0,
+  cabin: false,
+  doorAmount: 0,
+  frameStats: { fps: 0, calls: 0, triangles: 0 },
 };
 
 /** Road camera stays independent from the showroom and configuration camera. */
@@ -88,6 +91,7 @@ const VEHICLE_VIEWS: Record<VehicleView, { yaw: number; pitch: number; radius: n
 };
 
 export function setVehicleView(view: VehicleView) {
+  useExperience.setState({ cabinView: view === "interior" });
   const v = VEHICLE_VIEWS[view];
   vehicleCamera.targetYaw = v.yaw;
   vehicleCamera.targetPitch = v.pitch;
@@ -101,6 +105,8 @@ export function setVehicleView(view: VehicleView) {
 }
 
 export function setVehicleHotspot(id: string) {
+  if (id === "cabin") { setVehicleView("interior"); return; }
+  useExperience.setState({ cabinView: false });
   const hotspots: Record<string, { yaw: number; pitch: number; radius: number; focus: [number, number, number] }> = {
     headlamp: { yaw: 0.18, pitch: 0.08, radius: 3.1, focus: [2.3, 0.78, 0.45] },
     wheel: { yaw: 0.92, pitch: 0.03, radius: 3.0, focus: [1.46, 0.52, 0.92] },
@@ -135,6 +141,11 @@ interface ExperienceState {
   exploreOpen: boolean;
   activeHotspot: string | null;
   showroomWheels: boolean;
+  doorsOpen: boolean;
+  cabinView: boolean;
+  headlightsOn: boolean;
+  autonomous: boolean;
+  graphicsError: boolean;
   setShowroomWheels: (rolling: boolean) => void;
   aiAction: AIAction;
   aiStage: AIStage;
@@ -154,7 +165,7 @@ interface ExperienceState {
 export const useExperience = create<ExperienceState>((set) => ({
   booted: false,
   modelReady: false,
-  quality: "HIGH",
+  quality: detectQuality(),
   reducedMotion: false,
   phase: "hero",
   audioOn: false,
@@ -164,6 +175,11 @@ export const useExperience = create<ExperienceState>((set) => ({
   exploreOpen: false,
   activeHotspot: null,
   showroomWheels: true,
+  doorsOpen: false,
+  cabinView: false,
+  headlightsOn: true,
+  autonomous: true,
+  graphicsError: false,
   setShowroomWheels: (rolling) => set({ showroomWheels: rolling }),
   aiAction: "idle",
   aiStage: "ready",
@@ -174,7 +190,7 @@ export const useExperience = create<ExperienceState>((set) => ({
   toggleAudio: () => set((s) => ({ audioOn: !s.audioOn })),
   setMenu: (open) => set({ menuOpen: open }),
   setConfig: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
-  setExplore: (open) => set({ exploreOpen: open, activeHotspot: null }),
+  setExplore: (open) => set({ exploreOpen: open, activeHotspot: null, cabinView: false, doorsOpen: false }),
   setHotspot: (id) => set({ activeHotspot: id }),
   setAIAction: (action) => set({ aiAction: action }),
   setAIStage: (stage) => set({ aiStage: stage }),
@@ -194,7 +210,7 @@ export function detectQuality(): Quality {
   return cores >= 8 ? "HIGH" : "MEDIUM";
 }
 
-export const PARTICLE_COUNT: Record<Quality, number> = { HIGH: 1800, MEDIUM: 900, LOW: 400 };
+export const PARTICLE_COUNT: Record<Quality, number> = { HIGH: 280, MEDIUM: 160, LOW: 72 };
 
 export const DPR: Record<Quality, [number, number]> = {
   HIGH: [1, 1.5],

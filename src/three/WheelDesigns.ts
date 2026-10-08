@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 // All packages share the authored rim envelope: radius .3033, width .2785.
 // Axle is local X. Tires, discs, calipers and wheel mounting transforms stay intact.
@@ -59,6 +60,20 @@ export function createWheelDesigns(side: number): Record<string, THREE.Group> {
         }
       }
     }
+    // A single draw call per rim, including spokes, bolts, barrel and lips.
+    group.updateMatrixWorld(true);
+    const parts: THREE.BufferGeometry[] = [];
+    group.traverse(node => {
+      if (node instanceof THREE.Mesh) {
+        const copy = node.geometry.index ? node.geometry.toNonIndexed() : node.geometry.clone();
+        copy.applyMatrix4(node.matrixWorld);
+        parts.push(copy);
+      }
+    });
+    const merged = mergeGeometries(parts);
+    parts.forEach(part => part.dispose());
+    group.clear();
+    if (merged) group.add(mesh(merged));
     group.visible = id === "aeroblade";
     designs[id] = group;
   }

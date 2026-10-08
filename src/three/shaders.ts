@@ -64,8 +64,10 @@ export const AERO = {
     attribute vec4 aRand;
     varying float vA;
     varying float vMix;
+    varying float vSeed;
     void main() {
       float t = fract(aSeed * 7.31 + uTime * (0.09 + 0.10 * aRand.x));
+      vSeed = aSeed;
       float x = mix(8.5, -8.5, t);
       float dome = exp(-x * x * 0.20);
       float y = 0.42 + (0.5 + 1.6 * aRand.y) * dome + aRand.y * 0.85;
@@ -77,23 +79,36 @@ export const AERO = {
         y = 0.15+t*0.6+aRand.y*0.3+sin(t*12.0+aSeed*40.0)*t*0.16;
         z = (aRand.z>0.5 ? 1.0 : -1.0)*(0.85+t*0.5)+sin(t*14.0+aSeed*30.0)*t*0.3;
       }
-      vA = uActive * smoothstep(8.5, 6.0, abs(x)) * (0.2 + 0.8 * (1.0 - exp(-abs(z) * 0.55)));
+      vA = uActive * (1.0-smoothstep(5.0, 9.5, abs(x))) * smoothstep(0.0,0.09,t) * (1.0-smoothstep(0.6,1.0,t));
       vMix = exp(-x * x * 0.12);
       vec4 mv = modelViewMatrix * vec4(x, y, z, 1.0);
-      gl_PointSize = min(95.0,(8.0 + 15.0 * aRand.w) * (100.0 / max(0.1, -mv.z)));
+      gl_PointSize = min(120.0,(18.0 + 38.0 * t + 12.0 * aRand.w) * (12.0 / max(0.5, -mv.z)));
       gl_Position = projectionMatrix * mv;
     }
   `,
   fragment: /* glsl */ `
     precision highp float;
     uniform vec3 uColor;
+    uniform float uTime;
+    uniform float uDrive;
     varying float vA;
     varying float vMix;
+    varying float vSeed;
+    float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float noise(vec2 p) {
+      vec2 i=floor(p),f=fract(p); f=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+    }
     void main() {
-      float d = length(gl_PointCoord - 0.5);
-      float a = exp(-d*d*18.0) * smoothstep(0.5,0.3,d) * vA;
-      vec3 col = mix(uColor * 0.7, vec3(0.9, 0.98, 1.0), 0.4 + 0.6 * (1.0 - vMix));
-      gl_FragColor = vec4(col, a * 0.065);
+      vec2 p = gl_PointCoord - 0.5;
+      float angle=vSeed*6.283+uTime*.12;
+      p=mat2(cos(angle),-sin(angle),sin(angle),cos(angle))*p;
+      float n=noise(p*7.0+vSeed*31.0+uTime*.08)*.6+noise(p*15.0-uTime*.12)*.4;
+      float edge=1.0-smoothstep(.14,.5,length(p));
+      float a=edge*edge*smoothstep(.22,.72,n)*vA;
+      vec3 col=mix(vec3(.33,.40,.43),vec3(.73,.78,.79),n);
+      col=mix(mix(uColor*.35,vec3(.65,.77,.8),n),col,uDrive);
+      gl_FragColor=vec4(col,a*.4);
     }
   `,
 };

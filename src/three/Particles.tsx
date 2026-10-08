@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { runtime, PARTICLE_COUNT, useExperience } from "../store";
 import { AERO, ENERGY, HOLO, RADAR, GLOW } from "./shaders";
@@ -10,7 +10,7 @@ const win = (t: number) => Math.min(1, Math.max(0, THREE.MathUtils.smoothstep(t,
 /* --------------------------- airflow -------------------------------- */
 
 export function AirFlow() {
-  const quality = runtime.quality;
+  const quality = useExperience(s => s.quality);
   const count = PARTICLE_COUNT[quality];
   const mat = useRef<THREE.ShaderMaterial>(null);
   const active = useRef(0);
@@ -33,6 +33,7 @@ export function AirFlow() {
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 1, 0), 12);
     return g;
   }, [count]);
+  useEffect(() => () => geo.dispose(), [geo]);
 
   const uniforms = useMemo(
     () => ({
@@ -45,7 +46,7 @@ export function AirFlow() {
   );
 
   useFrame((_, dt) => {
-    const target = runtime.driving ? 0.24 * Math.min(runtime.speed/80,1) : runtime.chapter === 1 ? win(runtime.local) : 0;
+    const target = runtime.driving ? (performance.now() < runtime.nitroUntil ? 0.8 : 0.32) * Math.min(runtime.speed/80,1) : runtime.chapter === 1 ? win(runtime.local) : 0;
     active.current = damp(active.current, target, 3, Math.min(dt, 0.05));
     if (mat.current) {
       mat.current.uniforms.uTime.value += dt * (runtime.reduced ? 0.15 : 1);
@@ -63,7 +64,7 @@ export function AirFlow() {
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={THREE.NormalBlending}
       />
     </points>
   );
@@ -96,6 +97,7 @@ export function EnergyFlow() {
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.2, 0), 4);
     return g;
   }, [count]);
+  useEffect(() => () => geo.dispose(), [geo]);
 
   const uniforms = useMemo(
     () => ({ uTime: { value: 0 }, uActive: { value: 0 }, uColor: { value: new THREE.Color("#5fe8ff") } }),
@@ -198,6 +200,7 @@ export function HoloField() {
       }),
     []
   );
+  useEffect(() => () => { holoMats.forEach(m => m.dispose()); ringMat.dispose(); radarMat.dispose(); }, [holoMats, ringMat, radarMat]);
 
   useFrame((_, dt) => {
     const target = runtime.chapter === 5 && useExperience.getState().aiAction === "autonomous" ? win(runtime.local) : 0;
