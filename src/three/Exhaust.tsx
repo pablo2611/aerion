@@ -1,13 +1,14 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { runtime } from "../store";
 
 /** Volumetric, animated sport flames; this package is fictional. */
 export default function Exhaust() {
-  const pipes = useRef<THREE.Group>(null);
   const flames = useRef<THREE.Group>(null);
-  const material = useRef<THREE.MeshBasicMaterial>(null);
+  const glow = useRef<THREE.PointLight>(null);
+  const outer = useMemo(()=>new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),[]);
+  const inner = useMemo(()=>outer.clone(),[outer]);
   const heat = useMemo(() => {
     const geometry = new THREE.ConeGeometry(0.16,1.3,24,12,true);
     const position = geometry.getAttribute("position") as THREE.BufferAttribute;
@@ -23,13 +24,15 @@ export default function Exhaust() {
     geometry.setAttribute("color",new THREE.BufferAttribute(colors,3));
     return {geometry,original:new Float32Array(position.array)};
   },[]);
+  useEffect(()=>()=>{heat.geometry.dispose();outer.dispose();inner.dispose();},[heat,outer,inner]);
   useFrame((state) => {
-    if(pipes.current)pipes.current.visible=runtime.driving;
     const remaining=runtime.nitroUntil-performance.now();
     const active=runtime.driving&&remaining>0;
     if(flames.current)flames.current.visible=active;
     if(!active)return;
-    if(material.current)material.current.opacity=0.8*Math.min(1,remaining/450);
+    const fade=Math.min(1,remaining/450);
+    outer.opacity=.72*fade; inner.opacity=.9*fade;
+    if(glow.current)glow.current.intensity=.5*fade;
     const position=heat.geometry.getAttribute("position") as THREE.BufferAttribute;
     const time=runtime.reduced?0:state.clock.elapsedTime;
     for(let i=0;i<position.count;i++){
@@ -41,27 +44,26 @@ export default function Exhaust() {
     position.needsUpdate=true;
   });
   return <>
-    <group ref={pipes} visible={false}>
-      {[-0.62,0.62].map(z=><group key={z} position={[-2.58,0.3,z]}>
-        <mesh rotation={[0,0,Math.PI/2]} castShadow>
-          <cylinderGeometry args={[0.13,0.13,0.38,20,1,true]}/>
-          <meshStandardMaterial color="#657681" metalness={0.8} roughness={0.4} side={THREE.DoubleSide}/>
+    <group>
+      {[-0.70,0.70].map(z=><group key={z} position={[-2.615,0.37,z]}>
+        <mesh rotation={[0,0,Math.PI/2]} scale={[1,1,1.5]} castShadow>
+          <cylinderGeometry args={[0.09,0.085,0.12,32,1,true]}/>
+          <meshStandardMaterial color="#72828b" metalness={0.88} roughness={0.32} side={THREE.DoubleSide}/>
         </mesh>
-        <mesh position={[-0.14,0,0]} rotation={[0,Math.PI/2,0]}>
-          <circleGeometry args={[0.105,20]}/><meshStandardMaterial color="#090b10" side={THREE.DoubleSide}/>
+        <mesh position={[0.035,0,0]} rotation={[0,Math.PI/2,0]} scale={[1.5,1,1]}>
+          <circleGeometry args={[0.087,32]}/><meshStandardMaterial color="#040709" side={THREE.DoubleSide}/>
+        </mesh>
+        <mesh position={[-0.061,0,0]} rotation={[0,Math.PI/2,0]} scale={[1.5,1,1]}>
+          <torusGeometry args={[0.091,0.006,8,32]}/><meshStandardMaterial color="#a4b0b4" metalness={.9} roughness={.25}/>
         </mesh>
       </group>)}
     </group>
     <group ref={flames} visible={false}>
-      {[-0.62,0.62].map(z=><group key={z} position={[-3.4,0.3,z]}>
-        <mesh geometry={heat.geometry} rotation={[0,0,Math.PI/2]} renderOrder={5}>
-          <meshBasicMaterial ref={z<0?material:undefined} vertexColors transparent opacity={0.8} depthWrite={false} side={THREE.DoubleSide} toneMapped={false}/>
-        </mesh>
-        <mesh geometry={heat.geometry} rotation={[0,0,Math.PI/2]} scale={[0.45,0.95,0.45]} renderOrder={6}>
-          <meshBasicMaterial vertexColors transparent opacity={0.95} depthWrite={false} side={THREE.DoubleSide} toneMapped={false}/>
-        </mesh>
+      {[-0.70,0.70].map(z=><group key={z} position={[-3.30,0.37,z]}>
+        <mesh geometry={heat.geometry} material={outer} rotation={[0,0,Math.PI/2]} scale={[.58,1,.88]} renderOrder={5}/>
+        <mesh geometry={heat.geometry} material={inner} rotation={[0,0,Math.PI/2]} scale={[0.29,0.97,0.44]} renderOrder={6}/>
       </group>)}
-      <pointLight position={[-3,0.45,0]} color="#ff7d29" intensity={0.65} distance={3}/>
+      <pointLight ref={glow} position={[-3,0.45,0]} color="#ff7d29" intensity={0.5} distance={3}/>
     </group>
   </>;
 }

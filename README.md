@@ -18,10 +18,11 @@ Una experiencia de gran turismo eléctrico, diseñada para explorar un vehículo
 - **Tu color:** ocho pinturas, acabados, interiores y firmas luminosas en vivo.
 - **Llantas intercambiables:** AeroBlade de cinco brazos, Turbine, Monolith perforada y Vector RS de radios dobles. Cambian la geometría real conservando el mismo diámetro, ancho y neumático.
 - **Sonido:** dos modos que responden a velocidad y nitro: Carrera usa una grabación de motor y Eléctrico usa sonido digital. En carretera, la música baja al 8% y tiene control independiente de 0 a 30%; recupera su volumen al salir. El sonido se activa con un botón.
-- **Voz en español:** respuestas habladas y comandos como «noche», «autonomía», «sensores» o «relajar».
+- **Asistente de cabina:** preguntas por voz o texto sobre velocidad, batería, autonomía, temperaturas, motor, llantas y recorrido. Comparte datos con la pantalla del coche y permite ajustar velocidad, faros, volumen y piloto. Prueba «¿cómo está el motor?», «¿cuánta batería queda?» o «pon la velocidad a 80». La música y el motor bajan mientras escuchas una respuesta o usas el micrófono.
+- **Trasera integrada:** difusor continuo, salidas ovaladas empotradas, reflectores y placa AERION; las llamas salen de las nuevas boquillas.
 - **Atmósfera:** humo con turbulencia y disipación, faros con iluminación sobre la carretera, pintura más limpia y recorrido por nueve capítulos con scroll nativo y progreso visible.
 
-La asistencia es una demo local con comandos predefinidos; no conecta con Claude ni con un servicio de IA. El reconocimiento de voz depende del navegador y requiere permiso de micrófono. Los botones funcionan sin micrófono. Las prestaciones, precios y sensores son ficticios.
+La asistencia interpreta consultas y comandos locales sobre la simulación; no está conectada a un modelo de IA generativa. El reconocimiento de voz depende del navegador y requiere permiso de micrófono; algunos navegadores procesan esa voz mediante su servicio en línea. La entrada escrita y los botones funcionan sin micrófono. Las prestaciones, precios y sensores son ficticios. El concepto es eléctrico y no utiliza gasolina.
 
 ## Controles de carretera
 
@@ -39,6 +40,7 @@ Si no escuchas el motor, comprueba que la pestaña no esté silenciada y que el 
 npm ci
 npm run dev
 npx tsc --noEmit
+npm run test:cabin
 npm run build
 ```
 

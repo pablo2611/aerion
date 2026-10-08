@@ -10,6 +10,7 @@ import Exhaust from "./Exhaust";
 import { createWheelDesigns } from "./WheelDesigns";
 import Cabin from "./Cabin";
 import VehicleLights from "./VehicleLights";
+import RearBody from "./RearBody";
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -64,7 +65,7 @@ function prepareModel(source: THREE.Group) {
   const clones = new Map<THREE.Material, THREE.Material>();
 
   root.traverse((object) => {
-    if (/^InteriorSteering|^InteriorPedal/.test(object.name)) object.visible = false;
+    if (/^InteriorSteering|^InteriorPedal|^InteriorDashMid$|^InteriorDashSides$|^BodyWindshieldWipers/.test(object.name)) object.visible = false;
     if (!(object instanceof THREE.Mesh)) return;
     object.castShadow = true;
     object.receiveShadow = true;
@@ -305,6 +306,7 @@ export default function Car() {
       </group>
       <Cabin />
       <VehicleLights />
+      <RearBody />
       <Exhaust />
     </group>
   );

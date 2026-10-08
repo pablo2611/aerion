@@ -140,8 +140,8 @@ function Rig() {
     let targetPos: THREE.Vector3;
     let targetFov: number;
     if (cabin) {
-      targetPos = target.set(0.30, 1.29, 0);
-      look.current.lerp(focus.set(1.65, 1.04, 0), 1 - Math.exp(-5 * dtc));
+      targetPos = target.set(size.width / size.height < 0.78 ? 0.20 : 0.30, 1.29, 0);
+      look.current.lerp(focus.set(1.65, 0.99, 0), 1 - Math.exp(-5 * dtc));
       targetFov = size.width / size.height < 0.78 ? 125 : 77;
     } else if (freeView) {
       const v = vehicleCamera;

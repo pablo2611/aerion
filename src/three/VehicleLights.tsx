@@ -36,8 +36,5 @@ export default function VehicleLights() {
     {[-0.79,0.79].map(z => <mesh key={z} position={[2.37,0.47,z]} rotation={[0,0,Math.PI/2]}>
       <cylinderGeometry args={[0.035,0.035,0.018,12]}/><meshStandardMaterial color="#071419" metalness={0.5} roughness={0.24}/>
     </mesh>)}
-    {[-0.72,-0.36,0,0.36,0.72].map(z => <mesh key={z} position={[-2.39,0.22,z]} rotation={[0,0,-0.08]}>
-      <boxGeometry args={[0.37,0.16,0.02]}/><meshStandardMaterial color="#172126" roughness={0.62} metalness={0.3}/>
-    </mesh>)}
   </>;
 }

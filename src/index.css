@@ -554,6 +554,37 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .drive-panel button:disabled { opacity:.6; cursor:default; }
 @media(max-width:767px){.drive-controls{width:auto;max-height:34dvh;bottom:12px;left:12px;right:12px;}.drive-heading{left:16px;top:78px;right:16px;}}
 .voice-panel { margin-top:16px; }
+.drive-controls.is-cabin { width:280px; max-height:30dvh; padding:14px; }
+.drive-controls.is-cabin button { padding:8px 10px; font-size:13px; }
+.cabin-assistant { position:fixed; z-index:68; right:20px; top:92px; width:350px; max-width:calc(100vw - 32px); max-height:44dvh; overflow:auto; pointer-events:auto; color:#eaf4f8; background:#08151ff5; border:1px solid #45616e; border-radius:12px; box-shadow:0 12px 32px #0005; font-size:14px; scrollbar-width:thin; }
+.cabin-assistant-title { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; }
+.cabin-assistant-title strong { display:block; font-size:17px; }
+.cabin-assistant-title span { display:block; color:#a8c3ce; font-size:11px; margin-top:3px; }
+.cabin-assistant button { cursor:pointer; min-height:36px; border:1px solid #45616e; padding:7px 10px; border-radius:6px; font-size:12px; color:#eaf4f8; background:#112732; }
+.cabin-assistant button:hover { background:#204653; }
+.cabin-assistant button:disabled { opacity:.5; cursor:default; }
+.cabin-assistant button[aria-pressed="true"] { border-color:#5fe8ff; color:#5fe8ff; }
+.cabin-assistant-content { padding:0 16px 14px; }
+.cabin-telemetry { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); padding:10px 0; border-top:1px solid #354d58; border-bottom:1px solid #354d58; }
+.cabin-telemetry dt { color:#acc7d1; font-size:11px; }
+.cabin-telemetry dd { font-size:21px; font-variant-numeric:tabular-nums; }
+.cabin-telemetry small { font-size:11px; }
+.cabin-question { color:#9bbbc8; margin-top:14px; font-size:12px; overflow-wrap:anywhere; }
+.cabin-answer { font-size:14px; line-height:1.5; margin-top:12px; overflow-wrap:anywhere; }
+.cabin-suggestions { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+.cabin-suggestions button { font-size:11px; min-height:30px; padding:5px 8px; }
+.cabin-ask-form { display:flex; gap:6px; margin-top:14px; }
+.cabin-ask-form input { width:100%; min-width:0; background:#041019; border:1px solid #547381; border-radius:6px; padding:10px; font-size:16px; color:#fff; }
+.cabin-ask-form input::placeholder { color:#9bb8c5; font-size:12px; }
+.cabin-voice-actions { display:flex; gap:6px; margin-top:8px; }
+.cabin-voice-actions button:first-child { flex:1; }
+.cabin-voice-status { color:#b1cbd6; font-size:11px; line-height:1.5; margin-top:8px; }
+@media(max-width:767px) {
+  .cabin-assistant { top:auto; bottom:12px; left:12px; right:12px; width:auto; max-width:none; max-height:37dvh; }
+  .cabin-assistant.in-showroom { bottom:190px; max-height:32dvh; }
+  .drive-controls.is-cabin { top:142px; bottom:auto; left:12px; right:auto; width:238px; max-height:21dvh; }
+  .cabin-assistant button { min-height:42px; }
+}
 @media(max-width:767px){ .ai-experience { min-height:900px; overflow-y:auto; } .drive-panel {padding:14px;} }
 
 .cursor-ring{width:24px;height:28px;border:0;border-radius:0;mix-blend-mode:normal;filter:drop-shadow(0 3px 4px #0008);}

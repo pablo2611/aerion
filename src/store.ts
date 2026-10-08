@@ -37,6 +37,7 @@ export const runtime = {
   cabin: false,
   doorAmount: 0,
   frameStats: { fps: 0, calls: 0, triangles: 0 },
+  telemetry: { battery: 84, motorTemp: 32, batteryTemp: 27, distanceKm: 0, elapsedSeconds: 0 },
 };
 
 /** Road camera stays independent from the showroom and configuration camera. */
@@ -137,6 +138,12 @@ interface ExperienceState {
   audioOn: boolean;
   audioError: string;
   driving: boolean;
+  drivingPaused: boolean;
+  cruiseSpeed: number;
+  engineMode: "electric" | "race";
+  audioVolume: number;
+  musicVolume: number;
+  voiceOn: boolean;
   menuOpen: boolean;
   exploreOpen: boolean;
   activeHotspot: string | null;
@@ -171,6 +178,12 @@ export const useExperience = create<ExperienceState>((set) => ({
   audioOn: false,
   audioError: "",
   driving: false,
+  drivingPaused: false,
+  cruiseSpeed: 80,
+  engineMode: "race",
+  audioVolume: 80,
+  musicVolume: 8,
+  voiceOn: false,
   menuOpen: false,
   exploreOpen: false,
   activeHotspot: null,

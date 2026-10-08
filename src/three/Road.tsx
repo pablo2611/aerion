@@ -1,7 +1,8 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { runtime } from "../store";
+import { runtime, useExperience } from "../store";
+import { advanceTelemetry } from "../telemetry";
 
 /** One instanced draw call for moving roadside reflectors. */
 export default function Road() {
@@ -16,8 +17,11 @@ export default function Road() {
     if (!runtime.driving) return;
     const dt = Math.min(delta,0.05);
     const boosting = performance.now() < runtime.nitroUntil;
-    const target = boosting ? Math.min(runtime.targetSpeed + 85, 260) : runtime.targetSpeed;
+    const state = useExperience.getState();
+    const target = state.drivingPaused || runtime.telemetry.battery <= 0 ? 0 : boosting ? Math.min(state.cruiseSpeed + 85, 260) : state.cruiseSpeed;
     runtime.speed = THREE.MathUtils.damp(runtime.speed,target,boosting ? 2.2 : 1.5,dt);
+    if (target === 0 && runtime.speed < 0.3) runtime.speed = 0;
+    advanceTelemetry(dt, runtime.speed, boosting);
     if (!runtime.reduced) distance.current += runtime.speed / 3.6 * dt;
     if(posts.current) {
       for(let i=0;i<32;i++) {
