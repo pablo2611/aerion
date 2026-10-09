@@ -230,7 +230,9 @@ export default function Car() {
     const wheelFinish = WHEEL_FINISHES.find((item) => item.id === cfg.wheelFinish) ?? WHEEL_FINISHES[2];
     const signatureColor = colors.signature;
 
-    const ghost = ch === 3
+    // The chapter cutaway belongs to the battery presentation, never the road
+    // or interactive showroom. Scroll progress remains frozen behind those views.
+    const ghost = !interactive && ch === 3
       ? clamp(smoothstep(t, 0.1, 0.3) * (1 - smoothstep(t, 0.74, 0.96)), 0, 1)
       : 0;
     const finale = !runtime.driving && ch === 8 ? t : 0;
@@ -245,7 +247,7 @@ export default function Car() {
       material.roughness = damp(material.roughness, Math.max(0.36, THREE.MathUtils.lerp(paint.rough, finish.rough, 0.55)), 4, dtc);
       material.clearcoat = damp(material.clearcoat, Math.min(0.4, THREE.MathUtils.lerp(paint.clear, finish.clear, 0.58)), 4, dtc);
       material.clearcoatRoughness = damp(material.clearcoatRoughness, finish.id === "satin" ? 0.42 : 0.3, 4, dtc);
-      material.opacity = damp(material.opacity, 1 - ghost * 0.84, 5, dtc);
+      material.opacity = interactive ? 1 : damp(material.opacity, 1 - ghost * 0.84, 5, dtc);
       material.transparent = material.opacity < 0.995;
       material.depthWrite = material.opacity > 0.65;
       material.envMapIntensity = damp(material.envMapIntensity, lightTheme ? 0.65 : 0.8, 3, dtc);
