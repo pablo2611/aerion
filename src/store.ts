@@ -35,6 +35,7 @@ export const runtime = {
   peakSpeed: 0,
   targetSpeed: 80,
   nitroUntil: 0,
+  nitroCooldownUntil: 0,
   turn: 'off' as 'off' | 'left' | 'right',
   lane: 0,
   targetLane: 0,

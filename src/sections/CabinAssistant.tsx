@@ -3,11 +3,14 @@ import { sonic } from "../audio";
 import { runtime, useExperience } from "../store";
 import { readTelemetry } from "../telemetry";
 import { answerVehicle, type VehicleCommand } from "../vehicleAssistant";
+import { changeVehicleLane, startVehicleNitro } from '../vehicleActions';
 
 export function applyVehicleCommand(command?:VehicleCommand){
   if(!command)return;
   const store=useExperience.getState();
   switch(command.type){
+    case "lane":return changeVehicleLane(command.value);
+    case "nitro":if(command.value)return startVehicleNitro();runtime.nitroUntil=0;return 'Nitro desactivado. Vuelvo a la velocidad de crucero.';
     case "speed":useExperience.setState({cruiseSpeed:command.value,drivingPaused:false,autonomous:true,engineView:false});break;
     case "pause":runtime.nitroUntil=0;useExperience.setState({drivingPaused:true,autonomous:false});break;
     case "resume":useExperience.setState({drivingPaused:false,autonomous:true,engineView:false});break;
@@ -43,9 +46,9 @@ export default function CabinAssistant(){
     stopListening();
     if(!speechSupported){setStatus("Voz no disponible en este navegador");return;}
     const result=answerVehicle(trimmed,readTelemetry(),previousTopic.current);
-    previousTopic.current=result.topic;applyVehicleCommand(result.command);setInput("");
+    previousTopic.current=result.topic;const feedback=applyVehicleCommand(result.command);setInput("");
     sonic.voiceEnabled=true;useExperience.setState({voiceOn:true});setSpeaking(true);setStatus("AERION está hablando");
-    sonic.speak(result.text,()=>{if(mounted.current){setSpeaking(false);setStatus("Listo para otra pregunta");}});
+    sonic.speak(feedback||result.text,()=>{if(mounted.current){setSpeaking(false);setStatus("Listo para otra pregunta");}});
   };
   const listen=()=>{
     if(recognition.current){stopListening();setStatus("Escucha detenida");return;}

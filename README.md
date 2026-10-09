@@ -57,3 +57,17 @@ Car Concept © 2024 Darmstadt Graphics Group GmbH, por Eric Chadwick — [CC BY 
 Imágenes de concepto incluidas en el proyecto original. Referencias y video: Pexels, acreditados en la web. Música ambiental original sintetizada para estos proyectos.
 
 Motor grabado: [racing car engine sound loops](https://opengameart.org/content/racing-car-engine-sound-loops), por domasx2, CC0. Normalizado y adaptado para repetición continua y respuesta a velocidad. [Créditos del audio](public/audio/ENGINE-CREDITS.md).
+
+## Escena 3D editable
+La carretera usa geometría real: costa y barreras preparadas en Blender 4.5 LTS,
+acantilados y vegetación CC0 de Poly Haven y cielo atmosférico. El mar se anima
+con desplazamiento de vértices. No hay una foto panorámica como fondo.
+
+Abre `assets-source/coastal-stage.blend` para editar la composición completa.
+`assets-source/build_coast.py` reproduce la exportación del escenario GLB.
+El navegador instancia las rocas y árboles por separado para limitar memoria.
+
+En Cabina IA puedes pedir «pon la velocidad a 120», «cambia al carril derecho»,
+«activa el nitro», «desactiva el nitro», «para», «continúa» o ajustar los faros.
+El asistente local responde por voz y aplica los controles a la simulación.
+Los cambios de carril respetan el tráfico y el nitro tiene recarga compartida.

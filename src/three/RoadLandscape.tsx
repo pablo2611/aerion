@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import { useEnvironment, useGLTF } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { Sky, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { runtime, useExperience } from '../store';
 
@@ -34,10 +34,31 @@ function ImportedInstances({asset,placements}:{asset:string;placements:Placement
   return <group>{parts.map((part,i)=><instancedMesh key={i} ref={node=>{meshes.current[i]=node;}} args={[part.geometry,part.material,placements.length]} frustumCulled={false}/>)}</group>;
 }
 
-/** Photographed sun/sky/coast plus imported scanned rocks and vegetation. */
+function BlenderCoast(){
+  const {scene}=useGLTF(base+'coastal-stage.glb');
+  const group=useRef<THREE.Group>(null);
+  const wave=useMemo(()=>({value:0}),[]);
+  const stage=useMemo(()=>{
+    const clone=scene.clone(true);
+    clone.traverse(node=>{
+      if(!(node instanceof THREE.Mesh)||node.name!=='Three_dimensional_ocean')return;
+      const mat=(node.material as THREE.MeshStandardMaterial).clone();
+      mat.onBeforeCompile=shader=>{
+        shader.uniforms.coastTime=wave;
+        shader.vertexShader='uniform float coastTime;\n'+shader.vertexShader;
+        shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n transformed.y += .12*sin(position.x*.11+coastTime*.65)+.06*sin(position.z*.24-coastTime*.45);');
+      };
+      node.material=mat;
+    });
+    return clone;
+  },[scene,wave]);
+  useEffect(()=>()=>stage.traverse(node=>{if(node instanceof THREE.Mesh&&node.name==='Three_dimensional_ocean')(node.material as THREE.Material).dispose();}),[stage]);
+  useFrame(({clock})=>{wave.value=runtime.reduced?0:clock.elapsedTime;if(group.current)group.current.position.z=-runtime.lane;});
+  return <group ref={group}><primitive object={stage}/></group>;
+}
+
+/** Volumetric Blender stage and imported scanned vegetation; no panoramic photograph. */
 export default function RoadLandscape(){
-  const sky=useEnvironment({files:base+'umhlanga-sunrise-2k.hdr'});
-  const scene=useThree(s=>s.scene);
   const quality=useExperience(s=>s.quality);
   const placements=useMemo(()=>{
     const n=quality==='LOW'?3:quality==='MEDIUM'?6:8;
@@ -48,14 +69,14 @@ export default function RoadLandscape(){
     };
   },[quality]);
   useEffect(()=>{
-    const old=scene.environment;
-    scene.environment=sky;
     useExperience.setState({environmentReady:true});
-    return()=>{scene.environment=old;useExperience.setState({environmentReady:false});};
-  },[scene,sky]);
-  useFrame(()=>{if(runtime.driving&&scene.environment!==sky)scene.environment=sky;});
+    return()=>{useExperience.setState({environmentReady:false});};
+  },[]);
   return <group name="PolyHavenCoastalEnvironment">
-    <mesh rotation={[0,1.9,0]}><sphereGeometry args={[215,48,24]}/><meshBasicMaterial map={sky} side={THREE.BackSide} depthWrite={false} fog={false}/></mesh>
+    <Sky distance={450000} sunPosition={[90,45,-130]} turbidity={3.5} rayleigh={1.5} mieCoefficient={.003} mieDirectionalG={.8}/>
+    <directionalLight position={[60,45,-90]} intensity={2.1} color="#ffe0b4"/>
+    <hemisphereLight args={['#bcdde9','#35463b',1.1]}/>
+    <BlenderCoast/>
     <ImportedInstances asset="coastal_cliff_01" placements={placements.cliffs}/>
     <ImportedInstances asset="pine_sapling_small" placements={placements.trees}/>
     <ImportedInstances asset="boulder_01" placements={placements.rocks}/>

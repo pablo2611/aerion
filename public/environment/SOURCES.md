@@ -22,3 +22,12 @@ uses instancing with fewer objects at lower quality settings.
 
 Assets are loaded only when entering the road view and are hosted with the site.
 The original full-resolution model downloads are not distributed with this repo.
+
+## Blender stage (2026-10-08)
+The road backdrop no longer uses the Umhlanga HDR panorama. It uses volumetric
+shore geometry and barriers assembled with Blender 4.5.14 LTS, a physical Sky
+shader, and the existing CC0 scanned cliffs, boulders and trees above.
+Editable source: assets-source/coastal-stage.blend (includes imported models).
+Rebuild: blender --background --factory-startup --python assets-source/build_coast.py
+The 181 KB stage GLB has six material draws. Scanned assets remain separate,
+shared GPU instances for distance recycling and adaptive quality.

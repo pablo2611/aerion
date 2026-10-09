@@ -2,6 +2,8 @@ import { readTelemetry } from "./telemetry";
 
 export type VehicleCommand =
   | { type: "speed"; value: number }
+  | { type: "lane"; value: "left" | "right" }
+  | { type: "nitro"; value: boolean }
   | { type: "pause" | "resume" | "night" | "relax" }
   | { type: "lights" | "doors"; value: boolean }
   | { type: "volume"; value: number }
@@ -27,12 +29,20 @@ export function answerVehicle(question: string, t: Telemetry, previousTopic = ""
   const action = /pon(?:me|lo)?|poner|ajusta|ajustar|sube|subir|baja|bajar|acelera|acelerar|cambia|cambiar|activa|activar|enciende|encender|apaga|apagar|desactiva|silencia|abre|abrir|cierra|cerrar|deten|detener|pausa|pausar|frena|frenar|continua|continuar|reanuda|reanudar|vamos a/.test(q);
   const answer = (text: string, topic: string, command?: VehicleCommand): VehicleAnswer => ({ text, topic, command });
 
-  if (/\bno\s+(?:me\s+)?(?:lo\s+)?(?:pong|pon|ajust|sub|baj|aceler|cambi|activ|enciend|apag|desactiv|silenci|abr|cierr|deteng|deten|par|fren|continu|reanud)/.test(q)) return answer("Mantengo los ajustes actuales. Dime qué dato del coche quieres consultar.", previousTopic);
+  if (/\bno\s+(?:me\s+)?(?:lo\s+)?(?:pong|pon|ajust|sub|baj|aceler|cambi|activ|enciend|apag|desactiv|silenci|abr|cierr|deteng|deten|par|fren|continu|reanud|gir)/.test(q)) return answer("Mantengo los ajustes actuales. Dime qué dato del coche quieres consultar.", previousTopic);
 
   if (action && /velocidad|km|kilometros|acelera|vamos a/.test(q) && n !== undefined) {
     if (!t.driving) return answer("Abre Ver en carretera para ajustar la velocidad del coche.", "speed");
     if (n < 20 || n > 420) return answer("La velocidad de crucero de esta experiencia admite entre 20 y 420 km/h. Con nitro alcanza 460. Puedes pedirme que pare para detenernos.", "speed");
     return answer(`Ajusto la velocidad a ${Math.round(n)} kilómetros por hora.`, "speed", {type:"speed", value:Math.round(n)});
+  }
+  if ((action || /\bgira\b/.test(q)) && /izquierd[oa]|derech[oa]/.test(q)) {
+    if(!t.driving)return answer('Abre Ver en carretera para cambiar de carril.','drive');
+    return answer('','drive',{type:'lane',value:/izquierd[oa]/.test(q)?'left':'right'});
+  }
+  if(action && /nitro|turbo/.test(q)) {
+    if(!t.driving)return answer('Abre Ver en carretera para utilizar el nitro.','drive');
+    return answer('','drive',{type:'nitro',value:!off});
   }
   if (action && /volumen|sonido|musica/.test(q) && n !== undefined) {
     const value = Math.min(100,Math.max(0,Math.round(n)));
