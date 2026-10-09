@@ -6,7 +6,6 @@ import { runtime } from "../store";
 /** Volumetric, animated sport flames; this package is fictional. */
 export default function Exhaust() {
   const flames = useRef<THREE.Group>(null);
-  const glow = useRef<THREE.PointLight>(null);
   const outer = useMemo(()=>new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.8,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),[]);
   const inner = useMemo(()=>outer.clone(),[outer]);
   const heat = useMemo(() => {
@@ -32,7 +31,6 @@ export default function Exhaust() {
     if(!active)return;
     const fade=Math.min(1,remaining/450);
     outer.opacity=.72*fade; inner.opacity=.9*fade;
-    if(glow.current)glow.current.intensity=.5*fade;
     const position=heat.geometry.getAttribute("position") as THREE.BufferAttribute;
     const time=runtime.reduced?0:state.clock.elapsedTime;
     for(let i=0;i<position.count;i++){
@@ -63,7 +61,8 @@ export default function Exhaust() {
         <mesh geometry={heat.geometry} material={outer} rotation={[0,0,Math.PI/2]} scale={[.58,1,.88]} renderOrder={5}/>
         <mesh geometry={heat.geometry} material={inner} rotation={[0,0,Math.PI/2]} scale={[0.29,0.97,0.44]} renderOrder={6}/>
       </group>)}
-      <pointLight ref={glow} position={[-3,0.45,0]} color="#ff7d29" intensity={0.5} distance={3}/>
+      {/* Unlit flames keep the scene's light count stable: toggling a light
+          here recompiles every lit car material on boost start and finish. */}
     </group>
   </>;
 }

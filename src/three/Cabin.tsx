@@ -6,6 +6,7 @@ import { SIGNATURES } from "../data/content";
 import { readTelemetry } from "../telemetry";
 import { Html } from "@react-three/drei";
 import CabinAssistant from "../sections/CabinAssistant";
+import { detectedActors } from '../traffic';
 
 function screenTexture() {
   const canvas = document.createElement("canvas");
@@ -61,8 +62,19 @@ export default function Cabin() {
     }
     c.fillStyle = color; c.fillRect(464, 238, 48, 74);
     c.fillStyle = "#16313b"; c.fillRect(470, 249, 36, 25);
-    c.strokeStyle = "#87b9c7"; c.strokeRect(525, 151, 27, 41); c.strokeRect(435, 108, 20, 30);
+    const detected=detectedActors(runtime.lane);
+    for(const actor of detected){
+      const depth=1-actor.x/100;
+      const y=70+depth*155;
+      const x=488-actor.relativeLane*(9+depth*10);
+      const w=actor.kind==='car'?16+depth*14:9+depth*7;
+      c.fillStyle=actor.kind==='car'?'#a9c8da':'#ffb265';c.fillRect(x-w/2,y,w,w*1.6);
+      c.strokeStyle='#5fe8ff';c.lineWidth=1;c.strokeRect(x-w/2-4,y-4,w+8,w*1.6+8);
+      c.font='12px sans-serif';c.fillText(`${actor.id} ${Math.round(actor.x)}m`,x-w/2-4,y-9);
+    }
+    if(runtime.turn!=='off'&&Math.floor(time*2)%2===0){c.fillStyle='#ffb347';c.font='bold 30px sans-serif';c.fillText(runtime.turn==='left'?'←':'→',runtime.turn==='left'?365:548,290);}
     c.restore();
+    c.font='14px sans-serif';c.fillStyle='#9dbcc8';c.fillText(`${detected.length} OBJETOS · SIMULACIÓN`,325,375);
     c.fillStyle = "#abc7d2"; c.font = "17px sans-serif"; c.fillText(`MOTOR ${telemetry.motorTemp} °C`, 325, 348);
     display.texture.needsUpdate = true;
     if (ambient.current) ambient.current.opacity = 0.2 + runtime.lightState.ambient * 0.65;

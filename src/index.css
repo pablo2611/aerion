@@ -550,7 +550,9 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .drive-orbit { cursor:grab; }
 .drive-orbit:active { cursor:grabbing; }
 .drive-orbit:focus-visible { outline:2px solid #5fe8ff; outline-offset:-4px; }
-.drive-nitro { background:#a33c16; color:#fff; font-weight:700; }
+.drive-nitro { background:#a33c16; color:#fff; font-weight:700; min-height:60px !important; font-variant-numeric:tabular-nums; }
+.engine-specs { display:grid; grid-template-columns:1fr 1.25fr; gap:8px; margin:12px 0; font-size:12px; }
+.engine-specs dt { color:#9dbcc8; }.engine-specs dd { margin:0; }
 .drive-panel button:disabled { opacity:.6; cursor:default; }
 @media(max-width:767px){.drive-controls{width:auto;max-height:34dvh;bottom:12px;left:12px;right:12px;}.drive-heading{left:16px;top:78px;right:16px;}}
 .voice-panel { margin-top:16px; }

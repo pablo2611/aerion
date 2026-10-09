@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { useExperience } from "../store";
+import { Html } from '@react-three/drei';
+
+function PartLabel({position,children}:{position:[number,number,number];children:string}){
+  return <Html position={position} center distanceFactor={2.2} zIndexRange={[59,58]} style={{pointerEvents:'none',whiteSpace:'nowrap',background:'#07131ce8',border:'1px solid #5fe8ff66',padding:'4px 7px',color:'#e6f7ff',fontSize:11}}>{children}</Html>;
+}
 
 function Cable({points}:{points:[number,number,number][]}){
   const curve=useMemo(()=>new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),[points]);
@@ -9,6 +14,12 @@ function Cable({points}:{points:[number,number,number][]}){
 export default function EngineBay(){
   const visible=useExperience(s=>s.engineView && s.driving);
   return <group visible={visible} position={[-1.62,.81,0]} name="ElectricPowertrain">
+    {visible&&<>
+      <PartLabel position={[-.2,.48,-.48]}>01 · MOTOR AXIAL IZQUIERDO</PartLabel>
+      <PartLabel position={[-.2,.48,.48]}>02 · MOTOR AXIAL DERECHO</PartLabel>
+      <PartLabel position={[.48,.63,0]}>03 · INVERSOR / 800 V</PartLabel>
+      <PartLabel position={[-.52,.02,0]}>04 · CRYOLOOP / CABLEADO HV</PartLabel>
+    </>}
     <mesh position={[0,-.10,0]}><boxGeometry args={[1.32,.07,1.58]}/><meshStandardMaterial color="#17232a" metalness={.5} roughness={.5}/></mesh>
     {[-.43,.43].map(z=><group key={z} position={[0,.16,z]}>
       <mesh rotation={[Math.PI/2,0,0]}><cylinderGeometry args={[.23,.23,.56,32]}/><meshStandardMaterial color="#77868e" metalness={.85} roughness={.32}/></mesh>
@@ -22,3 +33,4 @@ export default function EngineBay(){
     {[-.63,.63].map(z=><mesh key={z} position={[0,-.04,z]}><boxGeometry args={[1.27,.12,.07]}/><meshStandardMaterial color="#819095" metalness={.8} roughness={.35}/></mesh>)}
   </group>;
 }
+

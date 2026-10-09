@@ -12,6 +12,7 @@ import Cabin from "./Cabin";
 import VehicleLights from "./VehicleLights";
 import RearBody from "./RearBody";
 import EngineBay from "./EngineBay";
+import TurnSignals from './TurnSignals';
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -314,6 +315,7 @@ export default function Car() {
       <RearBody />
       <EngineBay />
       <Exhaust />
+      <TurnSignals />
     </group>
   );
 }

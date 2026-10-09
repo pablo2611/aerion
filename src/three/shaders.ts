@@ -24,6 +24,7 @@ export const FLOOR = {
     uniform float uTime;
     uniform float uRoad;
     uniform float uDistance;
+    uniform float uLane;
     void main() {
       float r = length(vWorld);
       float pool = exp(-r * r * 0.085) * uPool;
@@ -42,10 +43,11 @@ export const FLOOR = {
       col = mix(col, vec3(0.0), contact * 0.85);
       col = mix(col, uFog, smoothstep(11.0, 30.0, r));
       float asphalt = 0.045 + fract(sin(dot(floor(vWorld*85.0),vec2(12.9898,78.233)))*43758.5453)*0.016;
-      vec3 road = abs(vWorld.y)<4.8 ? vec3(asphalt) : vec3(0.16,0.21,0.18);
+      float lateral = vWorld.y + uLane;
+      vec3 road = abs(lateral)<4.8 ? vec3(asphalt) : vec3(0.16,0.21,0.18);
       float dash = step(0.45,fract((vWorld.x+uDistance)/7.0));
-      float lanes = (1.0-smoothstep(0.035,0.07,abs(abs(vWorld.y)-2.5)))*dash;
-      float edges = 1.0-smoothstep(0.035,0.075,abs(abs(vWorld.y)-4.55));
+      float lanes = (1.0-smoothstep(0.035,0.07,abs(abs(lateral)-1.6)))*dash;
+      float edges = 1.0-smoothstep(0.035,0.075,abs(abs(lateral)-4.65));
       road = mix(road,vec3(0.75,0.8,0.75),max(lanes,edges));
       road *= 1.0-contact*0.7;
       road = mix(road,uFog,smoothstep(35.0,70.0,r));
@@ -82,7 +84,7 @@ export const AERO = {
       vA = uActive * (1.0-smoothstep(5.0, 9.5, abs(x))) * smoothstep(0.0,0.09,t) * (1.0-smoothstep(0.6,1.0,t));
       vMix = exp(-x * x * 0.12);
       vec4 mv = modelViewMatrix * vec4(x, y, z, 1.0);
-      gl_PointSize = min(120.0,(18.0 + 38.0 * t + 12.0 * aRand.w) * (12.0 / max(0.5, -mv.z)));
+      gl_PointSize = min(mix(120.0, 56.0, uDrive),(18.0 + 38.0 * t + 12.0 * aRand.w) * (12.0 / max(0.5, -mv.z)));
       gl_Position = projectionMatrix * mv;
     }
   `,

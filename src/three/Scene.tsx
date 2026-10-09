@@ -249,6 +249,7 @@ function Stage() {
       uTime: { value: 0 },
       uRoad: { value: 0 },
       uDistance: { value: 0 },
+      uLane: { value: 0 },
     }),
     []
   );
@@ -282,6 +283,7 @@ function Stage() {
       u.uContact.value = damp(u.uContact.value, th.contact, 2.5, dtc);
       u.uTime.value += dtc;
       u.uRoad.value = damp(u.uRoad.value,runtime.driving ? 1 : 0,4,dtc);
+      u.uLane.value=runtime.driving?runtime.lane:0;
       if (!runtime.reduced) u.uDistance.value += runtime.speed / 3.6 * dtc;
     }
     if (keyLight.current) keyLight.current.intensity = damp(keyLight.current.intensity, th.env * 0.4, 2.5, dtc);

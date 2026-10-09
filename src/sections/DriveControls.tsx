@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { PAINTS } from "../data/content";
 import { driveCamera, runtime, useExperience } from "../store";
 import { sonic } from "../audio";
+import { detectedActors } from '../traffic';
 
 export default function DriveControls() {
   const exploring = useExperience(s => s.exploreOpen);
@@ -24,6 +25,8 @@ export default function DriveControls() {
   const [boostSeconds, setBoostSeconds] = useState(0);
   const [cooldown, setCooldown] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [maneuver,setManeuver]=useState('Tráfico simulado · detección vinculada a la carretera');
+  const session=useRef(0);
   const music = useExperience(s=>s.musicVolume);
   const engineMode = useExperience(s=>s.engineMode);
   const volume = useExperience(s=>s.audioVolume);
@@ -41,6 +44,8 @@ export default function DriveControls() {
     driveCamera.targetPitch = 0.22;
     driveCamera.targetRadius = 9.5;
     runtime.nitroUntil = 0;
+    runtime.turn='off';runtime.lane=0;runtime.targetLane=0;
+    session.current++;
     useExperience.setState({doorsOpen:false,cabinView:false,engineView:false});
     cooldownUntil.current = 0;
     setPaused(false); setBoostSeconds(0); setCooldown(0);
@@ -61,6 +66,7 @@ export default function DriveControls() {
     return () => {
       document.body.style.overflow = old;
       runtime.nitroUntil = 0;
+      runtime.turn='off';session.current++;
       sonic.setDrivingMix(false); sonic.hum(0);
       window.removeEventListener("keydown",closeFromKey); window.clearInterval(timer);
     };
@@ -78,10 +84,22 @@ export default function DriveControls() {
     useExperience.setState({cabinView:false,engineView:false});
     cooldownUntil.current = performance.now()+9500;
     setBoostSeconds(7); setCooldown(10);
-    if (!audio) await toggleMotor();
-    sonic.nitro();
+    const currentSession=session.current;
+    try {
+      if (!audio) await toggleMotor();
+      if(currentSession===session.current&&runtime.driving&&performance.now()<runtime.nitroUntil)sonic.nitro();
+    } catch {
+      useExperience.setState({audioError:'El audio no pudo iniciarse. Puedes reactivarlo con Activar motor.'});
+    }
   };
-  const view = (yaw: number) => { useExperience.setState({cabinView:false,engineView:false}); driveCamera.targetYaw=yaw; driveCamera.targetPitch=0.2; driveCamera.targetRadius=9.5; };
+  const changeLane=(direction:'left'|'right')=>{
+    if(paused||boostSeconds>0)return;
+    const next=Math.max(-3.2,Math.min(3.2,runtime.targetLane+(direction==='left'?-3.2:3.2)));
+    if(next===runtime.targetLane){setManeuver('Ya estás en el carril exterior.');return;}
+    if(detectedActors(next).some(actor=>Math.abs(actor.relativeLane)<1&&actor.x<25)){setManeuver('Carril ocupado · espera a que el vehículo se aleje.');return;}
+    runtime.turn=direction;runtime.targetLane=next;setManeuver(direction==='left'?'Cambio al carril izquierdo · señal activa':'Cambio al carril derecho · señal activa');
+  };
+  const view = (yaw: number) => { runtime.nitroUntil=0;useExperience.setState({cabinView:false,engineView:false}); driveCamera.targetYaw=yaw; driveCamera.targetPitch=0.2; driveCamera.targetRadius=9.5; };
   const inspectEngine=()=>{runtime.speed=0;runtime.nitroUntil=0;useExperience.setState({engineView:!engineView,cabinView:false,drivingPaused:true,autonomous:false});if(!audio)void toggleMotor();};
   const enterRoad=()=>{runtime.driving=true;runtime.peakSpeed=0;sonic.setDrivingMix(true);useExperience.setState({driving:true,exploreOpen:false});if(!audio)void toggleMotor();};
   if (exploring || (!driving && phase === "configurator")) return null;
@@ -115,6 +133,7 @@ export default function DriveControls() {
       <div className="flex items-baseline justify-between gap-5"><strong className="font-display text-3xl tabular-nums">{displaySpeed} <span className="text-base">km/h</span></strong><button aria-pressed={paused} onClick={()=>{runtime.nitroUntil=0;useExperience.setState({engineView:false});setPaused(!paused);}}>{paused?'Continuar':'Pausar'}</button></div>
       {!cabin && <p className="mt-1 text-xs text-white/85">{engineView?"Motor eléctrico · inspección detenida":`Marcha ${gear} / 7 · Máx. ${peak} km/h`}</p>}
       {engineView && <div className="mt-2 flex gap-2"><button onClick={inspectEngine}>Cerrar motor</button><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Ocultar controles":"Controles"}</button></div>}
+      {engineView && <div className="mt-3 text-sm leading-relaxed"><strong>AERION · Triax Vortech</strong><p>3 motores eléctricos de flujo axial · tracción integral con vectorización PulseVector.</p><dl className="engine-specs"><dt>Potencia / par</dt><dd>1.340 hp / 1.200 Nm</dd><dt>Arquitectura</dt><dd>800 V · inversor y cableado HV</dd><dt>Batería / refrigeración</dt><dd>IonVault 120 kWh · CryoLoop</dd><dt>0–100 / velocidad</dt><dd>2,1 s · 350 km/h de concepto</dd></dl><p className="text-xs text-white/70">Vista: dos motores traseros e inversor. Datos de diseño ficticios; 460 km/h y marchas corresponden al modo deportivo de simulación.</p></div>}
       {cabin && <div className="mt-2 flex gap-2"><button onClick={()=>useExperience.setState({cabinView:false})}>Salir de cabina</button><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Ocultar controles":"Controles"}</button></div>}
       {expanded && <>
       <div className="mt-3 grid grid-cols-2 gap-2">
@@ -127,6 +146,8 @@ export default function DriveControls() {
         <button aria-pressed={cabin} onClick={()=>useExperience.setState({cabinView:!cabin,engineView:false})}>{cabin ? "Exterior" : "Cabina IA"}</button>
         <button aria-pressed={engineView} onClick={inspectEngine}>{engineView?"Cerrar motor":"Ver motor"}</button>
       </div>
+      <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Direccionales y cambio de carril"><button disabled={paused||boostSeconds>0} onClick={()=>changeLane('left')}>← Izquierda</button><button disabled={paused||boostSeconds>0} onClick={()=>changeLane('right')}>Derecha →</button></div>
+      <p role="status" className="mt-2 text-xs text-white/85">{maneuver}</p>
       <button className="mt-2 w-full" aria-pressed={autonomous} onClick={()=>{const next=!autonomous;useExperience.setState({autonomous:next});setPaused(!next);}}>{autonomous ? "Detener piloto IA" : "Activar piloto IA"}</button>
       <details className="mt-3">
         <summary className="cursor-pointer py-2 text-sm">Velocidad, sonido y color</summary>

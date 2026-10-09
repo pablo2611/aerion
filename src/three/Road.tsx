@@ -5,6 +5,7 @@ import { runtime, useExperience } from "../store";
 import { advanceTelemetry } from "../telemetry";
 import { drivetrainAt, nextRoadSpeed } from "../drivetrain";
 import RoadLandscape from "./RoadLandscape";
+import RoadTraffic from "./RoadTraffic";
 
 /** One instanced draw call for moving roadside reflectors. */
 export default function Road() {
@@ -19,6 +20,9 @@ export default function Road() {
     const dt = Math.min(delta,0.05);
     const boosting = performance.now() < runtime.nitroUntil;
     const state = useExperience.getState();
+    if(!state.drivingPaused)runtime.lane=THREE.MathUtils.damp(runtime.lane,runtime.targetLane,1.1,dt);
+    if(Math.abs(runtime.lane-runtime.targetLane)<.03)runtime.turn='off';
+    group.current.position.z=-runtime.lane;
     const target = state.drivingPaused || state.engineView || runtime.telemetry.battery <= 0 ? 0 : boosting ? 460 : state.cruiseSpeed;
     runtime.speed = nextRoadSpeed(runtime.speed,target,dt,boosting);
     runtime.peakSpeed=Math.max(runtime.peakSpeed,runtime.speed);
@@ -42,5 +46,6 @@ export default function Road() {
     </instancedMesh>
     {[-5.3,5.3].map(z => <mesh key={z} position={[0,0.62,z]}><boxGeometry args={[140,0.14,0.1]}/><meshStandardMaterial color="#8599a1" metalness={0.75} roughness={0.35}/></mesh>)}
     <RoadLandscape/>
+    <RoadTraffic/>
   </group>;
 }

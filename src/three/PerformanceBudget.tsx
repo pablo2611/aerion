@@ -42,10 +42,12 @@ export default function PerformanceBudget({ active }: { active: boolean }) {
     const calls = gl.info.render.calls;
     const triangles = gl.info.render.triangles;
     gl.info.reset();
-    if (!active || delta > 0.5) return;
+    if (!active || document.hidden) return;
     const s = sample.current;
     if (s.warmup > 0) { s.warmup -= delta; return; }
-    s.frames++; s.seconds += delta;
+    // Slow foreground frames must count, otherwise a stalled renderer can
+    // never trigger its quality fallback. Ignore time spent in background.
+    s.frames++; s.seconds += Math.min(delta, 2.5);
     if (s.seconds < 2.5) return;
     const fps = s.frames / s.seconds;
     runtime.frameStats = { fps: Math.round(fps), calls, triangles };
@@ -54,7 +56,7 @@ export default function PerformanceBudget({ active }: { active: boolean }) {
     }
     s.slowWindows = fps < (quality === "HIGH" ? 38 : 24) ? s.slowWindows + 1 : 0;
     s.frames = 0; s.seconds = 0;
-    if (s.slowWindows >= 2 && quality !== "LOW") {
+    if ((s.slowWindows >= 2 || fps < 12) && quality !== "LOW") {
       const next = quality === "HIGH" ? "MEDIUM" : "LOW";
       runtime.quality = next;
       useExperience.setState({ quality: next });

@@ -15,6 +15,14 @@ const state={drivingPaused:false,autonomous:true,doorsOpen:false,headlightsOn:tr
 const telemetry=moduleAt('telemetry.ts',{'./store':{runtime,useExperience:{getState:()=>state}}});
 const {answerVehicle:ask}=moduleAt('vehicleAssistant.ts');
 const {drivetrainAt,nextRoadSpeed}=moduleAt('drivetrain.ts');
+const traffic=moduleAt('traffic.ts');
+assert.equal(traffic.detectedActors(0).length,3);
+assert.equal(traffic.detectedActors(-3.2).find(actor=>actor.id==='M02').relativeLane,0);
+const actor={...traffic.roadActors[0],x:-19,speed:80};
+traffic.advanceActor(actor,460,.15);assert.equal(actor.x,110,'Passed actors recycle ahead');
+actor.x=141;traffic.advanceActor(actor,0,0);assert.equal(actor.x,24);
+actor.x=50;traffic.advanceActor(actor,80,1);assert.equal(actor.x,50,'Matching speed keeps radar distance stable');
+console.log('PASS: traffic detection, lane alignment and bounded recycling');
 let boosted=80;for(let i=0;i<140;i++)boosted=nextRoadSpeed(boosted,460,.05,true);
 assert.equal(boosted,460);assert.equal(drivetrainAt(boosted).gear,7);
 assert.ok(drivetrainAt(54).rpm>drivetrainAt(56).rpm,'Upshifting drops RPM');
