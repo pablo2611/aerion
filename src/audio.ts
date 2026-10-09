@@ -70,15 +70,13 @@ class SonicCore {
     return this.engineLoad;
   }
   private windGain: GainNode | null = null;
-  driveMusic = 0.08;
   volume = 0.8;
   private syncMusicVolume() {
-    if (this.music) this.music.volume = this.volume * (this.driving ? this.driveMusic : 1) * (this.listening ? 0 : this.speechActive ? 0.12 : 1);
-  }
-  setDriveMusic(value: number) {
-    this.driveMusic = Math.min(0.3, Math.max(0, value));
-    useExperience.setState({musicVolume: Math.round(this.driveMusic * 100)});
-    this.syncMusicVolume();
+    if (!this.music) return;
+    this.music.volume = this.volume * (this.listening ? 0 : this.speechActive ? 0.12 : 1);
+    this.music.muted = this.driving;
+    if (this.driving || !this.on || document.hidden) this.music.pause();
+    else void this.music.play().catch(() => {});
   }
   setDrivingMix(driving: boolean) {
     this.driving = driving;
@@ -203,7 +201,7 @@ class SonicCore {
     document.body.appendChild(this.music);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) { this.music?.pause(); this.cancelSpeech(); void ctx.suspend(); }
-      else if (this.on) { void ctx.resume(); void this.music?.play().catch(() => {}); }
+      else if (this.on) { void ctx.resume(); this.syncMusicVolume(); }
     });
     this.ctx = ctx;
     this.master = master;
@@ -221,7 +219,7 @@ class SonicCore {
       this.pending = true;
       try {
         const resumed = this.ctx.resume();
-        void this.music?.play().catch(() => {});
+        this.syncMusicVolume();
         await resumed;
         useExperience.setState({audioError:""});
         // Let the electric layer play immediately while the recording downloads.

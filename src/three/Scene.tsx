@@ -124,6 +124,7 @@ function Rig() {
   const size = useThree((s) => s.size);
   const look = useRef(new THREE.Vector3(0, 0.55, 0));
   const quality = useExperience(s => s.quality);
+  const driving = useExperience(s => s.driving);
   const exploreOpen = useExperience((s) => s.exploreOpen);
   const target = useMemo(() => new THREE.Vector3(), []);
   const focus = useMemo(() => new THREE.Vector3(), []);
@@ -214,7 +215,7 @@ function Rig() {
     c.updateProjectionMatrix();
   });
 
-  return quality === "LOW" ? null : (
+  return quality === "LOW" || driving ? null : (
     <EffectComposer multisampling={0}>
       <Bloom mipmapBlur intensity={0.16} luminanceThreshold={1.65} luminanceSmoothing={0.4} resolutionScale={0.5} />
       <Vignette eskil={false} offset={0.3} darkness={0.38} />

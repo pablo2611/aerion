@@ -26,7 +26,16 @@ export default function Cabin() {
   const signature = useExperience(s => s.config.signature);
   const cabin=useExperience(s=>s.cabinView && (s.driving||s.exploreOpen));
   const narrow=useThree(s=>s.size.width<768);
-  const htmlPortal=useMemo(()=>({current:document.body}),[]);
+  const htmlPortal=useMemo(()=>{
+    const layer=document.createElement('div');
+    layer.id='aerion-cabin-screen-layer';
+    Object.assign(layer.style,{position:'fixed',inset:'0',pointerEvents:'none',zIndex:'66'});
+    return {current:layer};
+  },[]);
+  useEffect(()=>{
+    document.body.appendChild(htmlPortal.current);
+    return()=>htmlPortal.current.remove();
+  },[htmlPortal]);
   const color = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
   useEffect(() => () => display.texture.dispose(), [display]);
 
@@ -76,6 +85,16 @@ export default function Cabin() {
     c.restore();
     c.font='14px sans-serif';c.fillStyle='#9dbcc8';c.fillText(`${detected.length} OBJETOS · SIMULACIÓN`,325,375);
     c.fillStyle = "#abc7d2"; c.font = "17px sans-serif"; c.fillText(`MOTOR ${telemetry.motorTemp} °C`, 325, 348);
+    // The assistant remains visible on the physical screen from outside too.
+    if(!runtime.cabin){
+      c.fillStyle='#102731';c.fillRect(600,20,400,340);
+      c.strokeStyle=color;c.lineWidth=2;c.beginPath();c.arc(795,125,46,0,Math.PI*2);c.stroke();
+      c.fillStyle=color;
+      for(let i=0;i<9;i++){const h=12+Math.sin(time*2+i*.8)*9;c.fillRect(762+i*8,125-h/2,3,h);}
+      c.fillStyle='#edf7fa';c.font='600 25px sans-serif';c.fillText('AERION IA',726,210);
+      c.font='18px sans-serif';c.fillStyle='#b4cbd4';c.fillText('Tu asistente de conducción',676,247);
+      c.font='16px sans-serif';c.fillText('Entra a Cabina IA para hablar',680,298);
+    }
     display.texture.needsUpdate = true;
     if (ambient.current) ambient.current.opacity = 0.2 + runtime.lightState.ambient * 0.65;
   });

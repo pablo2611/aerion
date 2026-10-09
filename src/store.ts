@@ -147,10 +147,10 @@ interface ExperienceState {
   driving: boolean;
   drivingPaused: boolean;
   engineView: boolean;
+  environmentReady: boolean;
   cruiseSpeed: number;
   engineMode: "electric" | "race";
   audioVolume: number;
-  musicVolume: number;
   voiceOn: boolean;
   menuOpen: boolean;
   exploreOpen: boolean;
@@ -188,10 +188,10 @@ export const useExperience = create<ExperienceState>((set) => ({
   driving: false,
   drivingPaused: false,
   engineView: false,
+  environmentReady: false,
   cruiseSpeed: 80,
   engineMode: "race",
   audioVolume: 80,
-  musicVolume: 8,
   voiceOn: false,
   menuOpen: false,
   exploreOpen: false,

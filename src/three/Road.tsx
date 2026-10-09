@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { runtime, useExperience } from "../store";
@@ -9,6 +9,7 @@ import RoadTraffic from "./RoadTraffic";
 
 /** One instanced draw call for moving roadside reflectors. */
 export default function Road() {
+  const driving=useExperience(s=>s.driving);
   const group = useRef<THREE.Group>(null);
   const posts = useRef<THREE.InstancedMesh>(null);
   const object = useMemo(() => new THREE.Object3D(),[]);
@@ -45,7 +46,7 @@ export default function Road() {
       <boxGeometry/><meshStandardMaterial color="#d4d9d3" roughness={0.6} emissive="#5fe8ff" emissiveIntensity={0.15}/>
     </instancedMesh>
     {[-5.3,5.3].map(z => <mesh key={z} position={[0,0.62,z]}><boxGeometry args={[140,0.14,0.1]}/><meshStandardMaterial color="#8599a1" metalness={0.75} roughness={0.35}/></mesh>)}
-    <RoadLandscape/>
+    {driving&&<Suspense fallback={null}><RoadLandscape/></Suspense>}
     <RoadTraffic/>
   </group>;
 }

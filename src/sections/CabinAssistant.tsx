@@ -60,7 +60,7 @@ export default function CabinAssistant(){
   };
   const submit=(e:FormEvent)=>{e.preventDefault();ask(input);};
   return <section className="cabin-screen-ai" aria-label="Asistente de voz en la pantalla del coche" onPointerDown={e=>e.stopPropagation()} onWheel={e=>e.stopPropagation()}>
-    <div className="screen-ai-heading"><strong>Habla con AERION</strong><button onClick={()=>{stopListening();sonic.cancelSpeech();setSpeaking(false);setStatus("Respuesta detenida");}} aria-label="Detener respuesta">Detener</button></div>
+    <div className="screen-ai-heading"><span className={`screen-ai-presence ${speaking||listening?'is-active':''}`} aria-hidden="true">◉</span><div><strong>AERION IA</strong><small>Asistente de conducción · voz</small></div><button onClick={()=>{stopListening();sonic.cancelSpeech();setSpeaking(false);setStatus("Respuesta detenida");}} aria-label="Detener respuesta">Detener</button></div>
     <div className={`screen-voice-wave ${speaking||listening?"is-active":""}`} aria-hidden="true">{Array.from({length:13},(_,i)=><i key={i} style={{animationDelay:`${i*-.09}s`}}/>)}</div>
     <div className="screen-ai-suggestions">{["Velocidad","Motor","Batería"].map(q=><button key={q} disabled={!speechSupported} onClick={()=>ask(`¿Cómo va ${q.toLowerCase()}?`)}>{q}</button>)}</div>
     <button className="screen-ai-talk" disabled={!supported||!speechSupported} aria-pressed={listening} onClick={listen}>{listening?"Dejar de escuchar":"Hablar"}</button>

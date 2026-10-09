@@ -547,6 +547,7 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .drive-panel input { accent-color:#5fe8ff; width:100%; }
 .drive-panel label { display:block; margin-top:12px; }
 .drive-controls { width:360px; max-height:55dvh; overflow-y:auto; }
+.drive-heading { max-width:440px; padding:12px 14px; background:#07131cb8; border-radius:8px; }
 .drive-orbit { cursor:grab; }
 .drive-orbit:active { cursor:grabbing; }
 .drive-orbit:focus-visible { outline:2px solid #5fe8ff; outline-offset:-4px; }
@@ -561,6 +562,10 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .cabin-screen-ai { width:320px; height:252px; padding:10px 12px; color:#eaf4f8; background:#07131c; font-size:13px; overflow:hidden; }
 .screen-ai-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .screen-ai-heading strong { font-size:17px; }
+.screen-ai-heading small { display:block; color:#abc7d2; font-size:10px; margin-top:2px; }
+.screen-ai-presence { color:#7ae5ef; font-size:28px; line-height:1; }
+.screen-ai-presence.is-active { animation:voicePresence 1s ease-in-out infinite alternate; }
+@keyframes voicePresence { to { opacity:.5; transform:scale(.9); } }
 .cabin-screen-ai button { min-height:30px; padding:5px 9px; color:#eaf4f8; background:#183440; border:1px solid #4a7585; border-radius:5px; cursor:pointer; font-size:12px; }
 .cabin-screen-ai button:hover { background:#245165; }
 .cabin-screen-ai button:focus-visible,.cabin-screen-ai input:focus-visible { outline:2px solid #5fe8ff; outline-offset:2px; }
@@ -577,13 +582,15 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .cabin-screen-ai input::placeholder { color:#b5ccd4; font-size:11px; }
 .screen-ai-status { font-size:11px; color:#b9d1da; line-height:1.3; margin-top:7px; }
 @media(max-width:767px) {
-  .cabin-screen-ai { height:120px; padding:3px 6px; }
-  .screen-ai-heading,.screen-voice-wave { display:none; }
+  .cabin-screen-ai { height:166px; padding:5px 7px; }
+  .screen-ai-heading strong { font-size:14px; }
+  .screen-ai-heading small { font-size:9px; }
+  .screen-voice-wave { display:none; }
   .cabin-screen-ai button { min-height:27px; padding:3px 6px; }
   .cabin-screen-ai .screen-ai-talk,.cabin-screen-ai form { margin-top:3px; }
   .cabin-screen-ai input { padding:3px 6px; }
   .screen-ai-status { margin-top:3px; font-size:10px; }
-  .drive-controls.is-cabin { top:142px; bottom:auto; left:12px; right:auto; width:238px; max-height:21dvh; }
+  .drive-controls.is-cabin { top:auto; bottom:12px; left:12px; right:auto; width:238px; max-height:21dvh; }
 }
 @media(prefers-reduced-motion:reduce) { .screen-voice-wave.is-active i { animation:none; height:14px; } }
 @media(max-width:767px){ .ai-experience { min-height:900px; overflow-y:auto; } .drive-panel {padding:14px;} }

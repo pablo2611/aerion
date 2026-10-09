@@ -46,6 +46,7 @@ export default function Footer() {
       <div className="mt-5 max-w-5xl border-t border-white/10 pt-5 font-mono-tech text-[12px] leading-relaxed tracking-[0.16em] text-white/70">
         <p>{MODEL_CREDITS}</p>
         <p className="mt-3">RACE ENGINE AUDIO: DOMASX2 / CC0. NORMALIZED AND LOOPED FOR AERION. <a href="https://opengameart.org/content/racing-car-engine-sound-loops" target="_blank" rel="noreferrer" className="underline hover:text-ion">AUDIO SOURCE</a></p>
+        <p className="mt-3">COASTAL ENVIRONMENT: POLY HAVEN / CC0. UMHLANGA SUNRISE, COASTAL CLIFF 01, BOULDER 01 AND PINE SAPLING SMALL. MESHES SIMPLIFIED AND TEXTURES OPTIMIZED FOR WEB. <a href={`${import.meta.env.BASE_URL}environment/SOURCES.md`} className="underline hover:text-ion" target="_blank" rel="noreferrer">ASSET CREDITS</a></p>
         <p className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
           <a href={AERION_MODEL.source} target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">MODEL SOURCE</a>
           <a href={AERION_MODEL.licenseUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">CC BY 4.0 LICENSE</a>

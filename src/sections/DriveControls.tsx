@@ -14,6 +14,7 @@ export default function DriveControls() {
   const phase = useExperience(s => s.phase);
   const cabin = useExperience(s => s.cabinView);
   const engineView=useExperience(s=>s.engineView);
+  const environmentReady=useExperience(s=>s.environmentReady);
   const autonomous = useExperience(s => s.autonomous);
   const speed = useExperience(s=>s.cruiseSpeed);
   const setSpeed = (value:number) => useExperience.setState({cruiseSpeed:value});
@@ -27,7 +28,6 @@ export default function DriveControls() {
   const [busy, setBusy] = useState(false);
   const [maneuver,setManeuver]=useState('Tráfico simulado · detección vinculada a la carretera');
   const session=useRef(0);
-  const music = useExperience(s=>s.musicVolume);
   const engineMode = useExperience(s=>s.engineMode);
   const volume = useExperience(s=>s.audioVolume);
   const [expanded,setExpanded] = useState(true);
@@ -127,6 +127,7 @@ export default function DriveControls() {
       <h2 className="font-display text-xl sm:text-3xl font-bold">AERION · On the road</h2>
       <p className="mt-1 text-sm">{cabin ? "Cabina sin volante" : "Gran turismo"} · {autonomous ? "Piloto IA" : "En espera"} · simulación 3D</p>
       <p className="mt-2 text-xs text-white/85">Arrastra para girar 360° · scroll para acercar</p>
+      {!environmentReady&&<p role="status" className="mt-2 text-xs">Cargando entorno 3D…</p>}
     </div>
     <button autoFocus className="absolute right-5 top-5 pointer-events-auto border border-white/50 bg-black/75 px-4 py-3" onClick={close}>Volver a la web</button>
     <div className={`drive-panel drive-controls pointer-events-auto absolute bottom-5 left-5 right-5 sm:right-auto ${cabin?"is-cabin":""} ${engineView?"is-engine":""}`}>
@@ -140,7 +141,7 @@ export default function DriveControls() {
         <button className="drive-nitro" disabled={paused||engineView||cooldown>0||busy} onClick={()=>void nitro()}>{boostSeconds>0?'NITRO · '+boostSeconds+'s':cooldown>0?'Recargando · '+cooldown+'s':'NITRO · 460 km/h'}</button>
         <button disabled={busy} aria-pressed={audio} onClick={()=>void toggleMotor()}>{busy?'Iniciando…':audio?'Silenciar motor':'Activar motor'}</button>
       </div>
-      <p role="status" className="mt-2 text-xs leading-relaxed text-white/85">{error || (boostSeconds>0?'Impulso activo · cámara de escapes':audio?paused?'Sonido activo · motor baja al detenerse':'Motor activo · música de fondo al mínimo':'Activa el motor para escuchar la conducción.')}</p>
+      <p role="status" className="mt-2 text-xs leading-relaxed text-white/85">{error || (boostSeconds>0?'Impulso activo · cámara de escapes':audio?paused?'Motor en ralentí · música solo en la web':'Motor y ambiente de conducción · sin música':'Activa el motor para escuchar la conducción.')}</p>
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Vistas del carro">
         <button onClick={()=>view(0.1)}>Frente</button><button onClick={()=>view(Math.PI/2)}>Lateral</button><button onClick={()=>view(Math.PI-0.4)}>Trasera</button>
         <button aria-pressed={cabin} onClick={()=>useExperience.setState({cabinView:!cabin,engineView:false})}>{cabin ? "Exterior" : "Cabina IA"}</button>
@@ -158,7 +159,6 @@ export default function DriveControls() {
         <p className="mb-3 text-xs text-white/85">{engineMode === "race" ? "Motor grabado / respuesta a velocidad y nitro" : "Motor eléctrico / sonido digital"}</p>
         <label htmlFor="drive-speed">Velocidad · {speed} km/h</label><input id="drive-speed" type="range" min="20" max="420" step="10" value={speed} onChange={e=>setSpeed(Number(e.target.value))}/>
         <label htmlFor="drive-volume">Volumen del motor · {volume}%</label><input id="drive-volume" type="range" min="0" max="100" value={volume} onChange={e=>sonic.setVolume(Number(e.target.value)/100)}/>
-        <label htmlFor="drive-music">Música de fondo · {music}%</label><input id="drive-music" type="range" min="0" max="30" value={music} onChange={e=>sonic.setDriveMusic(Number(e.target.value)/100)}/>
         <div className="my-3 flex flex-wrap gap-2" role="group" aria-label="Color del carro">{PAINTS.map(p=><button key={p.id} aria-label={p.name} aria-pressed={paint===p.id} onClick={()=>useExperience.getState().setConfig({paint:p.id})} style={{background:p.hex,outline:paint===p.id?'2px solid #fff':undefined,minHeight:32,width:32,padding:0}}/>)}</div>
       </details>
       <p className="mt-2 text-[11px] leading-relaxed text-white/70">Nitro y escapes ficticios para esta experiencia.</p>
