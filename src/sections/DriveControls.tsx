@@ -30,16 +30,17 @@ export default function DriveControls() {
   const session=useRef(0);
   const engineMode = useExperience(s=>s.engineMode);
   const volume = useExperience(s=>s.audioVolume);
-  const [expanded,setExpanded] = useState(true);
+  const [expanded,setExpanded] = useState(false);
 
   const drag = useRef({active:false,x:0,y:0});
-  useEffect(()=>setExpanded(!cabin&&!engineView),[cabin,engineView]);
+  useEffect(()=>setExpanded(false),[cabin,engineView]);
 
   useEffect(() => {
     if (!driving) return;
     const old = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     sonic.setDrivingMix(true);
+    if(useExperience.getState().quality==='HIGH')useExperience.setState({quality:'MEDIUM'});
     driveCamera.targetYaw = 0.78;
     driveCamera.targetPitch = 0.22;
     driveCamera.targetRadius = 9.5;
@@ -118,23 +119,21 @@ export default function DriveControls() {
     <div className={`drive-panel drive-controls pointer-events-auto absolute bottom-5 left-5 right-5 sm:right-auto ${cabin?"is-cabin":""} ${engineView?"is-engine":""}`}>
       <div className="flex items-baseline justify-between gap-5"><strong className="font-display text-3xl tabular-nums">{displaySpeed} <span className="text-base">km/h</span></strong><button aria-pressed={paused} onClick={()=>{runtime.nitroUntil=0;useExperience.setState({engineView:false});setPaused(!paused);}}>{paused?'Continuar':'Pausar'}</button></div>
       {!cabin && <p className="mt-1 text-xs text-white/85">{engineView?"Motor eléctrico · inspección detenida":`Marcha ${gear} / 7 · Máx. ${peak} km/h`}</p>}
-      {engineView && <div className="mt-2 flex gap-2"><button onClick={inspectEngine}>Cerrar motor</button><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Ocultar controles":"Controles"}</button></div>}
       {engineView && <div className="mt-3 text-sm leading-relaxed"><strong>AERION · Triax Vortech</strong><p>3 motores eléctricos de flujo axial · tracción integral con vectorización PulseVector.</p><dl className="engine-specs"><dt>Potencia / par</dt><dd>1.340 hp / 1.200 Nm</dd><dt>Arquitectura</dt><dd>800 V · inversor y cableado HV</dd><dt>Batería / refrigeración</dt><dd>IonVault 120 kWh · CryoLoop</dd><dt>0–100 / velocidad</dt><dd>2,1 s · 350 km/h de concepto</dd></dl><p className="text-xs text-white/70">Vista: dos motores traseros e inversor. Datos de diseño ficticios; 460 km/h y marchas corresponden al modo deportivo de simulación.</p></div>}
-      {cabin && <div className="mt-2 flex gap-2"><button onClick={()=>useExperience.setState({cabinView:false})}>Salir de cabina</button><button aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{expanded?"Ocultar controles":"Controles"}</button></div>}
-      {expanded && <>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button className="drive-nitro" disabled={paused||engineView||cooldown>0||busy} onClick={()=>void nitro()}>{boostSeconds>0?'NITRO · '+boostSeconds+'s':cooldown>0?'Recargando · '+cooldown+'s':'NITRO · 460 km/h'}</button>
-        <button disabled={busy} aria-pressed={audio} onClick={()=>void toggleMotor()}>{busy?'Iniciando…':audio?'Silenciar motor':'Activar motor'}</button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button className="drive-nitro" disabled={paused||engineView||cooldown>0||busy} onClick={()=>void nitro()}>{boostSeconds>0?'NITRO · '+boostSeconds+'s':cooldown>0?'Recarga · '+cooldown+'s':'Nitro'}</button>
+        <button onClick={()=>{if(engineView)inspectEngine();else useExperience.setState({cabinView:!cabin,engineView:false});}}>{engineView?'Cerrar motor':cabin?'Exterior':'Cabina IA'}</button>
+        <button aria-expanded={expanded} aria-controls="drive-settings" onClick={()=>setExpanded(!expanded)}>{expanded?'Cerrar ajustes':'Ajustes'}</button>
       </div>
+      {expanded && <div id="drive-settings">
+      <button className="mt-3 w-full" disabled={busy} aria-pressed={audio} onClick={()=>void toggleMotor()}>{busy?'Iniciando…':audio?'Silenciar motor':'Activar motor'}</button>
       <p role="status" className="mt-2 text-xs leading-relaxed text-white/85">{error || (boostSeconds>0?(cabin?'Impulso activo · vista de cabina':'Impulso activo · cámara de escapes'):audio?paused?'Motor en ralentí · música solo en la web':'Motor y ambiente de conducción · sin música':'Activa el motor para escuchar la conducción.')}</p>
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Vistas del carro">
-        <button onClick={()=>view(0.1)}>Frente</button><button onClick={()=>view(Math.PI/2)}>Lateral</button><button onClick={()=>view(Math.PI-0.4)}>Trasera</button>
-        <button aria-pressed={cabin} onClick={()=>useExperience.setState({cabinView:!cabin,engineView:false})}>{cabin ? "Exterior" : "Cabina IA"}</button>
-        <button aria-pressed={engineView} onClick={inspectEngine}>{engineView?"Cerrar motor":"Ver motor"}</button>
+        <label>Vista <select aria-label="Vista exterior" defaultValue="" onChange={e=>{view(Number(e.target.value));}}><option value="" disabled>Elegir ángulo</option><option value="0.1">Frente</option><option value="1.570796">Lateral</option><option value="2.741593">Trasera</option></select></label>
+        <button aria-pressed={engineView} onClick={inspectEngine}>{engineView?'Cerrar motor':'Ver motor'}</button>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Direccionales y cambio de carril"><button disabled={paused||boostSeconds>0} onClick={()=>changeLane('left')}>← Izquierda</button><button disabled={paused||boostSeconds>0} onClick={()=>changeLane('right')}>Derecha →</button></div>
       <p role="status" className="mt-2 text-xs text-white/85">{maneuver}</p>
-      <button className="mt-2 w-full" aria-pressed={autonomous} onClick={()=>{const next=!autonomous;useExperience.setState({autonomous:next});setPaused(!next);}}>{autonomous ? "Detener piloto IA" : "Activar piloto IA"}</button>
       <details className="mt-3">
         <summary className="cursor-pointer py-2 text-sm">Velocidad, sonido y color</summary>
         <div className="my-3 flex gap-2" role="group" aria-label="Tipo de motor">
@@ -147,7 +146,7 @@ export default function DriveControls() {
         <div className="my-3 flex flex-wrap gap-2" role="group" aria-label="Color del carro">{PAINTS.map(p=><button key={p.id} aria-label={p.name} aria-pressed={paint===p.id} onClick={()=>useExperience.getState().setConfig({paint:p.id})} style={{background:p.hex,outline:paint===p.id?'2px solid #fff':undefined,minHeight:32,width:32,padding:0}}/>)}</div>
       </details>
       <p className="mt-2 text-[11px] leading-relaxed text-white/70">Nitro y escapes ficticios para esta experiencia.</p>
-      </>}
+      </div>}
     </div>
   </div>;
 }

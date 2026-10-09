@@ -93,5 +93,11 @@ vm.runInNewContext(ts.transpile(code,{target:ts.ScriptTarget.ES2022,module:ts.Mo
  assert.equal(await e.toggle(),false);assert.equal(e.master.gain.value,0);e.music.play=async()=>{throw Error('blocked')};assert.equal(await e.toggle(),true);assert.equal(e.master.gain.value,.8);
  e.engineLoad=null;c.fetch=async()=>{throw Error('offline')};await e.loadEngine();assert.equal(e.engineMode,'electric');assert.match(c.audioState.audioError,/eléctrico/);await e.toggle();e.cancelSpeech();
  console.log('PASS: audio loading, bounded gains, stop, mode switching, speech interruption/ducking, microphone mix, mute and download fallback');
+ c.window.location={hostname:'127.0.0.1'};
+ const quiet=new e.constructor();quiet.voiceEnabled=true;
+ assert.equal(await quiet.toggle(),false);quiet.blip();assert.equal(quiet.ctx,null);assert.equal(quiet.music,null);
+ const previousSpeech=lastSpeech;let quietDone=0;quiet.speak('Prueba local',()=>quietDone++);
+ assert.equal(lastSpeech,previousSpeech);assert.equal(quietDone,1);
+ console.log('PASS: localhost creates no audio context, music or spoken output');
 })().catch(err=>{console.error(err);process.exitCode=1});
 

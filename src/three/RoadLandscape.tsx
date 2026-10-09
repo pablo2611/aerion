@@ -12,6 +12,8 @@ function ImportedInstances({asset,placements}:{asset:string;placements:Placement
   const {scene}=useGLTF(base+asset+'.glb');
   const meshes=useRef<(THREE.InstancedMesh|null)[]>([]);
   const object=useMemo(()=>new THREE.Object3D(),[]);
+  const lastDistance=useRef(NaN);
+  useEffect(()=>{lastDistance.current=NaN;},[placements]);
   const parts=useMemo(()=>{
     scene.updateMatrixWorld(true);
     const list:{geometry:THREE.BufferGeometry;material:THREE.Material|THREE.Material[]}[]=[];
@@ -24,6 +26,8 @@ function ImportedInstances({asset,placements}:{asset:string;placements:Placement
   useEffect(()=>()=>parts.forEach(part=>part.geometry.dispose()),[parts]);
   useFrame(()=>{
     const distance=runtime.reduced?0:runtime.telemetry.distanceKm*1000;
+    if(Math.abs(distance-lastDistance.current)<.001)return;
+    lastDistance.current=distance;
     placements.forEach((p,i)=>{
       object.position.set(((p.x-distance)%240+240)%240-120,-.1,p.z);
       object.rotation.set(0,p.rotation,0);object.scale.setScalar(p.scale);object.updateMatrix();
@@ -74,11 +78,9 @@ export default function RoadLandscape(){
   },[]);
   return <group name="PolyHavenCoastalEnvironment">
     <Sky distance={450000} sunPosition={[90,45,-130]} turbidity={3.5} rayleigh={1.5} mieCoefficient={.003} mieDirectionalG={.8}/>
-    <directionalLight position={[60,45,-90]} intensity={2.1} color="#ffe0b4"/>
-    <hemisphereLight args={['#bcdde9','#35463b',1.1]}/>
     <BlenderCoast/>
     <ImportedInstances asset="coastal_cliff_01" placements={placements.cliffs}/>
-    <ImportedInstances asset="pine_sapling_small" placements={placements.trees}/>
-    <ImportedInstances asset="boulder_01" placements={placements.rocks}/>
+    <ImportedInstances asset="pine-light" placements={placements.trees}/>
+    <ImportedInstances asset="boulder-light" placements={placements.rocks}/>
   </group>;
 }

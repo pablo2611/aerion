@@ -31,3 +31,12 @@ Editable source: assets-source/coastal-stage.blend (includes imported models).
 Rebuild: blender --background --factory-startup --python assets-source/build_coast.py
 The 181 KB stage GLB has six material draws. Scanned assets remain separate,
 shared GPU instances for distance recycling and adaptive quality.
+
+## Road performance revision
+`pine-light.glb` retains the CC0 source materials at 512px with simplified geometry.
+`boulder-light.glb` is a Blender decimation of boulder_01 for distant roadside rocks;
+`assets-source/optimize_rocks.py` reproduces this LOD. Original models are preserved.
+Road lighting reuses the existing key light, avoiding a new light-count shader variant.
+Driving begins at medium quality or below and automatically steps down on slow hardware.
+When stopped and the orbit camera has settled, the renderer targets 12 fps; camera
+movement and resumed driving restore the normal 30/45 fps budget.

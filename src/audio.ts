@@ -3,6 +3,7 @@
 import { useExperience } from "./store";
 import { drivetrainAt } from "./drivetrain";
 class SonicCore {
+  private readonly localPreview = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location?.hostname ?? '');
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private droneGain: GainNode | null = null;
@@ -94,6 +95,7 @@ class SonicCore {
   voiceEnabled = false;
 
   speak(text: string, onDone?: () => void) {
+    if(this.localPreview){onDone?.();return;}
     if (!this.voiceEnabled || !("speechSynthesis" in window)) { onDone?.(); return; }
     this.cancelSpeech();
     const id = this.speechId;
@@ -128,6 +130,7 @@ class SonicCore {
   }
 
   private init() {
+    if(this.localPreview)return;
     if (this.ctx) return;
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     if (!Ctx) return;

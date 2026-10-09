@@ -201,7 +201,7 @@ function Rig() {
       look.current.y = damp(look.current.y, cam.ty, 3.2, dtc);
       look.current.z = damp(look.current.z, cam.tz, 3.2, dtc);
     }
-    const k = reduced ? 14 : cabin ? 4.5 : freeView ? 5.5 : 4;
+    const k = reduced ? 14 : cabin ? 8.5 : freeView ? 8.5 : 4;
     c.position.x = damp(c.position.x, targetPos.x, k, dtc);
     c.position.y = damp(c.position.y, targetPos.y, k, dtc);
     c.position.z = damp(c.position.z, targetPos.z, k, dtc);
@@ -287,7 +287,11 @@ function Stage() {
       u.uLane.value=runtime.driving?runtime.lane:0;
       if (!runtime.reduced) u.uDistance.value += runtime.speed / 3.6 * dtc;
     }
-    if (keyLight.current) keyLight.current.intensity = damp(keyLight.current.intensity, th.env * 0.4, 2.5, dtc);
+    if (keyLight.current) {
+      keyLight.current.intensity = damp(keyLight.current.intensity, runtime.driving?2.1:th.env*.4, 2.5, dtc);
+      keyLight.current.position.set(...(runtime.driving?[60,45,-90]:[5,7,4]) as [number,number,number]);
+      keyLight.current.color.set(runtime.driving?'#ffe0b4':'#eaf4ff');
+    }
     if (ambLight.current) ambLight.current.intensity = damp(ambLight.current.intensity, 0.55 + th.env * 0.45, 2.5, dtc);
   });
 

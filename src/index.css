@@ -602,3 +602,6 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 .configurator-panel{z-index:25;background:#f0efea!important;backdrop-filter:none!important;}
 .config-tabs button{min-height:44px;}
 .config-feedback{max-width:65%;text-align:right;letter-spacing:.04em!important;}
+.drive-panel select { background:#102531; color:#f4f7fa; border:1px solid #5fe8ff66; min-height:44px; padding:8px; border-radius:0; }
+.drive-panel button:active { transform:translateY(1px); }
+#drive-settings { padding-top:4px; }
