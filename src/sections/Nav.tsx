@@ -28,7 +28,7 @@ function AudioToggle() {
       }}
       className="group flex h-10 items-center gap-2 border border-line px-3 transition-colors duration-300 hover:border-ion/60"
       aria-pressed={audioOn}
-      aria-label={audioOn ? "Silenciar música y motor" : "Activar música y motor"}
+      aria-label={audioOn ? "Silenciar música" : "Activar música"}
       data-cursor
     >
       <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -150,4 +150,3 @@ export default function Nav() {
     </>
   );
 }
-
