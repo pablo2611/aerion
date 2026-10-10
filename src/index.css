@@ -367,7 +367,22 @@ html.aerion-cursor * {
   background: repeating-radial-gradient(ellipse at 50% 100%, transparent 0 18px, rgba(95, 232, 255, 0.12) 19px 20px);
 }
 .autonomous-drive-image {
-  animation: autonomousDrive 9s ease-in-out infinite alternate;
+  animation: autonomousDrive 1.2s ease-out both;
+}
+.ai-ecosystem {margin-top:16px;max-width:520px;color:#d6e6ed;}
+.ai-ecosystem>p {font-size:13px;font-weight:600;margin-bottom:8px;}
+.ai-ecosystem nav {display:flex;flex-wrap:wrap;gap:8px;}
+.ai-ecosystem a {display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 10px;background:#091820;border:1px solid #72919f80;font-size:13px;}
+.ai-ecosystem a:hover {border-color:#5fe8ff;background:#102a36;}
+.ai-ecosystem a:focus-visible {outline:2px solid #5fe8ff;outline-offset:3px;}
+.ai-ecosystem a img {width:22px;height:22px;object-fit:contain;}
+.ai-ecosystem a:nth-child(3) img {filter:invert(1);}
+.ai-ecosystem small {display:block;margin-top:8px;max-width:48ch;font-size:12px;line-height:1.5;color:#bdced7;}
+.ai-experience>div:last-child {overflow-y:auto;overscroll-behavior:contain;}
+.ai-experience>div:last-child>* {flex-shrink:0;}
+@media (max-width:767px) {
+  .ai-ecosystem {margin-top:12px;}
+  .ai-ecosystem a {padding:6px 9px;}
 }
 @keyframes autonomousDrive {
   from { transform: scale(1.01) translate3d(0, 0, 0); }
@@ -536,8 +551,8 @@ details summary::-webkit-details-marker {
     border-radius: 0;
   }
   .ai-hmi {
-    max-height: 42dvh;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 
@@ -593,7 +608,7 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
   .drive-controls.is-cabin { top:auto; bottom:12px; left:12px; right:auto; width:238px; max-height:21dvh; }
 }
 @media(prefers-reduced-motion:reduce) { .screen-voice-wave.is-active i { animation:none; height:14px; } }
-@media(max-width:767px){ .ai-experience { min-height:900px; overflow-y:auto; } .drive-panel {padding:14px;} }
+@media(max-width:767px){ .ai-experience { min-height:0; } .drive-panel {padding:14px;} .nav-reserve,.nav-audio-label {display:none;} }
 
 .cursor-ring{width:24px;height:28px;border:0;border-radius:0;mix-blend-mode:normal;filter:drop-shadow(0 3px 4px #0008);}
 .cursor-dot{display:none;}

@@ -16,7 +16,9 @@ export default function Intelligence() {
     <SectionShell id="intelligence" chapter="intelligence" height={CHAPTERS[5].height}>
       <div className="relative h-full w-full overflow-hidden bg-[#03070b] text-white">
         <img
-          src={`${import.meta.env.BASE_URL}images/aerion-ai-shoulder.jpg`}
+          src={`${import.meta.env.BASE_URL}images/aerion-road-ai-1280.webp`}
+          srcSet={`${import.meta.env.BASE_URL}images/aerion-road-ai-640.webp 640w, ${import.meta.env.BASE_URL}images/aerion-road-ai-1280.webp 1280w`}
+          sizes="100vw" width={1280} height={720} decoding="async"
           alt="Over the shoulder view of the AERION ONE driver and cockpit with autonomous assistance active"
           className={`absolute inset-0 h-full w-full object-cover object-[55%_center] ${ready ? "autonomous-drive-image" : ""}`}
           loading="lazy"

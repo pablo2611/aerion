@@ -8,7 +8,6 @@ import PerformanceBudget from "./PerformanceBudget";
 import Car from "./Car";
 import Road from "./Road";
 import Showroom from "./Showroom";
-import { SIGNATURES } from "../data/content";
 import { AirFlow, EnergyFlow, HoloField } from "./Particles";
 import { FLOOR } from "./shaders";
 
@@ -228,8 +227,6 @@ function Rig() {
 function Stage() {
   const exploring = useExperience(s => s.exploreOpen);
   const isConfig = useExperience(s => s.phase === "configurator");
-  const signature = useExperience(s => s.config.signature);
-  const signatureColor = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
   const scene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
   const quality = useExperience(s => s.quality);
@@ -298,14 +295,10 @@ function Stage() {
   return (
     <>
       <ambientLight ref={ambLight} intensity={0.5} color="#c7d9ea" />
-      <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" castShadow={quality === "HIGH"} shadow-mapSize={[512, 512]} shadow-normalBias={0.035} />
+      <directionalLight ref={keyLight} position={[5, 7, 4]} intensity={1.4} color="#eaf4ff" />
       <directionalLight position={[-6, 3.5, -5]} intensity={0.35} color={isConfig ? "#ffffff" : "#7fd4ff"} />
       <directionalLight position={[1, 1.4, -8]} intensity={0.22} color="#ffbfa7" />
-      <pointLight position={[2.8, 0.65, 0]} intensity={0.18} color={signatureColor} distance={5} decay={2} />
-      {/* Long studio strips reveal roof, shoulder and the wheel crowns in dark chapters. */}
-      <rectAreaLight position={[0.2, 5, 1.8]} rotation={[-Math.PI / 2.8, 0, 0]} width={9} height={5} intensity={0.9} color="#e8f4ff" />
-      <rectAreaLight position={[0, 2.2, -5.8]} rotation={[0, Math.PI, 0]} width={7} height={3} intensity={0.55} color={isConfig ? "#fff7ec" : "#78dfff"} />
-      <rectAreaLight position={[5.7, 1.5, 0]} rotation={[0, -Math.PI / 2, 0]} width={5} height={4} intensity={0.45} color="#c5ecff" />
+      {/* Baked studio reflections provide the strips without per-pixel area lights. */}
       <Environment resolution={quality === "LOW" ? 64 : 128} frames={1}>
         <Lightformer intensity={0.65} position={[0, 4, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 8, 1]} color="#d7dedb" />
         <Lightformer intensity={0.45} position={[-8, 2, 0]} rotation={[0, Math.PI / 2, 0]} scale={[6, 1.2, 1]} color="#cfe8ff" />
@@ -321,7 +314,7 @@ function Stage() {
       </Suspense>
       <Showroom />
       <Road />
-      {!exploring && (phase === "aero" || driving) && <AirFlow />}
+      {!exploring && !driving && phase === "aero" && <AirFlow />}
       {!exploring && !driving && phase === "battery" && <EnergyFlow />}
       {!exploring && !driving && phase === "intelligence" && <HoloField />}
     </>
@@ -337,7 +330,6 @@ export default function Scene() {
     document.addEventListener("visibilitychange",sync);
     return () => document.removeEventListener("visibilitychange",sync);
   },[]);
-  const quality = useExperience((s) => s.quality);
   const exploreOpen = useExperience((s) => s.exploreOpen);
   const driving = useExperience((s) => s.driving);
   const phase = useExperience(s => s.phase);
@@ -349,9 +341,9 @@ export default function Scene() {
       <Canvas
         frameloop="demand"
         dpr={1}
-        gl={{ antialias: true, powerPreference: "default", alpha: false, stencil: false }}
+        gl={{ antialias: true, powerPreference: "high-performance", alpha: false, stencil: false }}
         camera={{ fov: 46, near: 0.035, far: 240, position: [0, 1.55, 11.5] }}
-        shadows={quality === "HIGH" ? "percentage" : false}
+        shadows={false}
         onCreated={({gl}) => {
           gl.domElement.addEventListener("webglcontextlost", () => {
             runtime.driving = false;

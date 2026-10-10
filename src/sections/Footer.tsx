@@ -53,11 +53,11 @@ export default function Footer() {
           <span>{AERION_MODEL.optimization.toUpperCase()}</span>
         </p>
         <p className="mt-3">
-          HUMAN INTERACTION RENDERS ARE ORIGINAL AERION CONCEPT IMAGES. VISUAL RESEARCH USED LICENSED PEXELS DRIVER / COCKPIT REFERENCES AND AUTOMOTIVE HMI GUIDANCE FOR LISTENING, PROCESSING AND CONFIRMATION STATES.
+          CAMPAIGN IMAGES CREATED WITH IMAGEGEN FROM THE AERION 3D CAR REFERENCE. RESPONSIVE WEBP DELIVERY. AI PRODUCT MARKS IDENTIFY LINKS TO THEIR RESPECTIVE PLATFORMS.
         </p>
         <p className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
-          <a href="https://www.pexels.com/photo/a-man-driving-a-car-at-night-with-purple-lights-17716276/" target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">NIGHT COCKPIT REFERENCE</a>
-          <a href="https://www.pexels.com/photo/a-man-in-a-jacket-driving-a-car-8631625/" target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">OVER-SHOULDER REFERENCE</a>
+          <a href={`${import.meta.env.BASE_URL}images/GENERATED.md`} target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">CAMPAIGN IMAGE NOTES</a>
+          <a href={`${import.meta.env.BASE_URL}icons/CREDITS.md`} target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">AI LOGO CREDITS</a>
           <a href="https://developer.android.com/design/ui/cars/guides/ux-requirements/communicate-app-by-voice" target="_blank" rel="noreferrer" className="transition-colors hover:text-ion">AUTOMOTIVE VOICE UX REFERENCE</a>
         </p>
       </div>

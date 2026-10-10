@@ -1,4 +1,5 @@
 import VoiceControls from "./VoiceControls";
+import AIEcosystem from '../components/AIEcosystem';
 import { useMemo } from "react";
 import { CHAPTERS } from "../data/content";
 import { INTELLIGENCE_DEMOS } from "../data/intelligence";
@@ -28,9 +29,11 @@ export default function Interior() {
     <SectionShell id="interior" chapter="interior" height={CHAPTERS[4].height}>
       <div className={`ai-experience relative h-full w-full overflow-hidden ai-theme-${config.uiTheme}`}>
         <img
-          src={`${import.meta.env.BASE_URL}images/aerion-ai-driver.jpg`}
+          src={`${import.meta.env.BASE_URL}images/aerion-cabin-1280.webp`}
+          srcSet={`${import.meta.env.BASE_URL}images/aerion-cabin-640.webp 640w, ${import.meta.env.BASE_URL}images/aerion-cabin-1280.webp 1280w`}
+          sizes="100vw" width={1280} height={720} loading="lazy" decoding="async"
           alt="A driver inside AERION ONE speaking with the integrated AERION intelligence"
-          className="absolute inset-0 h-full w-full object-cover object-[42%_center] sm:object-center"
+          className="absolute inset-0 h-full w-full object-cover object-[40%_center] sm:object-center"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,6,10,.82)_0%,rgba(3,6,10,.25)_48%,rgba(3,6,10,.72)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,6,10,.76)_0%,rgba(3,6,10,.08)_48%,rgba(3,6,10,.76)_100%)]" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#03060a]/95 via-transparent to-[#03060a]/50" />
@@ -44,13 +47,13 @@ export default function Interior() {
               </h2>
               <p className="mt-3 font-mono-tech text-[12px] tracking-[0.25em] text-white/70">LOCAL VOICE ASSISTANT · CONCEPT DEMO</p>
             </div>
-            <div className="hidden text-right font-mono-tech text-[12px] tracking-[0.25em] text-white/70 md:block">
-              <p>VOICE ZONE · DRIVER</p>
-              <p className="mt-1">LOCAL VEHICLE CONTROLS · ACTIVE</p>
+            <div className="hidden max-w-[420px] md:block">
+              <AIEcosystem />
             </div>
           </div>
 
           <VoiceControls />
+          <div className="md:hidden"><AIEcosystem /></div>
           <button className="mt-4 w-fit border border-ion bg-[#06131c] px-5 py-3 text-sm text-ion" onClick={() => { useExperience.getState().setExplore(true); setVehicleView("interior"); }}>
             Entrar a la cabina 3D · sin volante
           </button>

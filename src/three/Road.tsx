@@ -9,7 +9,6 @@ import RoadTraffic from "./RoadTraffic";
 
 /** One instanced draw call for moving roadside reflectors. */
 export default function Road() {
-  const driving=useExperience(s=>s.driving);
   const group = useRef<THREE.Group>(null);
   const posts = useRef<THREE.InstancedMesh>(null);
   const object = useMemo(() => new THREE.Object3D(),[]);
@@ -41,12 +40,12 @@ export default function Road() {
       posts.current.instanceMatrix.needsUpdate=true;
     }
   });
-  return <group ref={group} visible={false}>
+  return <group ref={group} name="AERIONRoad" visible={false}>
     <instancedMesh ref={posts} args={[undefined,undefined,32]} frustumCulled={false}>
       <boxGeometry/><meshStandardMaterial color="#d4d9d3" roughness={0.6} emissive="#5fe8ff" emissiveIntensity={0.15}/>
     </instancedMesh>
     {[-5.3,5.3].map(z => <mesh key={z} position={[0,0.62,z]}><boxGeometry args={[140,0.14,0.1]}/><meshStandardMaterial color="#8599a1" metalness={0.75} roughness={0.35}/></mesh>)}
-    {driving&&<Suspense fallback={null}><RoadLandscape/></Suspense>}
+    <Suspense fallback={null}><RoadLandscape/></Suspense>
     <RoadTraffic/>
   </group>;
 }

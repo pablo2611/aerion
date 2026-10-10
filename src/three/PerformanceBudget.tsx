@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { driveCamera, runtime, useExperience, type Quality } from "../store";
+import { stepRenderClock } from './renderClock';
 
 function roadIdle(portrait: boolean){
   return runtime.driving && useExperience.getState().drivingPaused && runtime.speed<.1
@@ -16,34 +17,49 @@ export function pixelRatioFor(quality: Quality, width: number, height: number, d
 
 /** One render clock, bounded pixel count, and conservative automatic step-down. */
 export default function PerformanceBudget({ active }: { active: boolean }) {
-  const { gl, size, invalidate } = useThree();
+  const { gl, size, invalidate, scene, camera } = useThree();
+  const driving = useExperience(s => s.driving);
+  const environmentReady = useExperience(s => s.environmentReady);
   const quality = useExperience(s => s.quality);
   const reduced = useExperience(s => s.reducedMotion);
   const sample = useRef({ frames: 0, seconds: 0, slowWindows: 0, warmup: 1.5, idle:false });
   const setDpr = useThree(s => s.setDpr);
   useEffect(() => { gl.info.autoReset = false; return () => { gl.info.autoReset = true; }; }, [gl]);
+  useEffect(() => {
+    if (!environmentReady) return;
+    const road = scene.getObjectByName('AERIONRoad');
+    if (!road) return;
+    const visible = road.visible;
+    road.visible = true;
+    const compile = gl.compileAsync(scene, camera);
+    road.visible = visible;
+    void compile.then(() => invalidate()).catch(() => invalidate());
+  }, [environmentReady, gl, scene, camera, invalidate]);
 
   useEffect(() => {
     runtime.quality = quality;
-    setDpr(pixelRatioFor(quality, size.width, size.height, window.devicePixelRatio || 1));
+    const dpr = pixelRatioFor(quality, size.width, size.height, window.devicePixelRatio || 1);
+    const roadDpr = Math.sqrt(480_000 / Math.max(1, size.width * size.height));
+    setDpr(driving ? Math.min(dpr, roadDpr) : dpr);
     sample.current = { frames: 0, seconds: 0, slowWindows: 0, warmup: 1.5, idle:false };
-  }, [quality, size.width, size.height, setDpr]);
+  }, [quality, size.width, size.height, setDpr, driving]);
 
   useEffect(() => {
     if (!active) return;
     let frame = 0;
     let last = 0;
     const tick = (now: number) => {
-      const interval=1000/(roadIdle(size.width/size.height<.78)?12:quality==='LOW'||reduced?30:quality==='MEDIUM'?45:60);
-      if (now - last >= interval - 0.7) {
-        last = now;
+      const interval=1000/(roadIdle(size.width/size.height<.78)?12:driving||quality==='LOW'||reduced?30:quality==='MEDIUM'?45:60);
+      const next = stepRenderClock(now, last, interval);
+      if (next !== undefined) {
+        last = next;
         invalidate();
       }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, quality, reduced, invalidate, size.width, size.height]);
+  }, [active, quality, reduced, invalidate, size.width, size.height, driving]);
 
   useFrame((_, delta) => {
     const calls = gl.info.render.calls;

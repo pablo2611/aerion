@@ -88,7 +88,7 @@ export default function DriveControls() {
   const view = (yaw: number) => { runtime.nitroUntil=0;useExperience.setState({cabinView:false,engineView:false}); driveCamera.targetYaw=yaw; driveCamera.targetPitch=0.2; driveCamera.targetRadius=9.5; };
   const inspectEngine=()=>{runtime.speed=0;runtime.nitroUntil=0;useExperience.setState({engineView:!engineView,cabinView:false,drivingPaused:true,autonomous:false});if(!audio)void toggleMotor();};
   const enterRoad=()=>{runtime.driving=true;runtime.peakSpeed=0;sonic.setDrivingMix(true);useExperience.setState({driving:true,exploreOpen:false});if(!audio)void toggleMotor();};
-  if (exploring || (!driving && phase === "configurator")) return null;
+  if (exploring || (!driving && ["configurator", "interior", "intelligence"].includes(phase))) return null;
   if (!driving) return <button disabled={!ready} className="fixed bottom-5 right-5 z-30 btn-solid" onClick={enterRoad}>Ver en carretera</button>;
 
   return <div className="fixed inset-0 z-[60] pointer-events-none text-white" role="region" aria-label="Experiencia en carretera">

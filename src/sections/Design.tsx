@@ -48,7 +48,8 @@ export default function Design() {
               <figure className="hidden md:block" data-rv="up">
                 <div className="w-64 overflow-hidden">
                   <img
-                    src={`${import.meta.env.BASE_URL}images/aerion-ai-exterior.jpg`}
+                    src={`${import.meta.env.BASE_URL}images/aerion-showroom-640.webp`}
+                    width={640} height={360} decoding="async"
                     alt="AERION ONE viewed from outside with its driver visible inside the illuminated cabin"
                     loading="lazy"
                     className="aspect-[16/9] w-full object-cover"

@@ -13,6 +13,7 @@ import VehicleLights from "./VehicleLights";
 import RearBody from "./RearBody";
 import EngineBay from "./EngineBay";
 import TurnSignals from './TurnSignals';
+import { batchStaticMeshes } from './batchStaticMeshes';
 
 const { clamp, damp, smoothstep } = THREE.MathUtils;
 
@@ -153,7 +154,8 @@ function prepareModel(source: THREE.Group) {
     const node = root.getObjectByName(`BodyDoor${side}Color1`)!;
     return { node, rest: node.quaternion.clone(), sign: side === "L" ? -1 : 1 };
   });
-  return { root, catalog, wheels, wheelDesigns, doors };
+  const batchedGeometry = batchStaticMeshes(root);
+  return { root, catalog, wheels, wheelDesigns, doors, batchedGeometry };
 }
 
 export default function Car() {
@@ -175,6 +177,7 @@ export default function Car() {
 
   const gltf = useGLTF(AERION_MODEL.url, AERION_MODEL.dracoPath, true, extendLoader);
   const prepared = useMemo(() => prepareModel(gltf.scene), [gltf.scene]);
+  useEffect(() => () => prepared.batchedGeometry.forEach(geometry => geometry.dispose()), [prepared]);
   const doorRotation = useMemo(() => new THREE.Quaternion(), []);
   const doorLift = useMemo(() => new THREE.Quaternion(), []);
   const zAxis = useMemo(() => new THREE.Vector3(0,0,1), []);

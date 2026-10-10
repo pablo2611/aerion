@@ -45,7 +45,7 @@ function AudioToggle() {
           />
         ))}
       </svg>
-      <span className="font-mono-tech text-[12px] tracking-[0.1em] opacity-90">
+      <span className="nav-audio-label font-mono-tech text-[12px] tracking-[0.1em] opacity-90">
         {audioOn ? "SONIDO ON" : "SONIDO OFF"}
       </span>
     </button>
@@ -94,7 +94,7 @@ export default function Nav() {
             <Magnetic
               as="button"
               onClick={() => go("finale")}
-              className="btn-solid hidden md:inline-flex"
+              className="nav-reserve btn-solid hidden md:inline-flex"
               data-cursor
               data-cursor-label="GO"
             >

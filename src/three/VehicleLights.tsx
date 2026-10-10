@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { runtime, useExperience } from "../store";
@@ -6,24 +6,13 @@ import { SIGNATURES } from "../data/content";
 
 export default function VehicleLights() {
   const beams = useRef<THREE.Group>(null);
-  const lights = useRef<THREE.Group>(null);
   const signature = useExperience(s => s.config.signature);
   const color = SIGNATURES.find(s => s.id === signature)?.hex ?? "#5fe8ff";
-  const targets = useMemo(() => [-0.68, 0.68].map(z => {
-    const target = new THREE.Object3D(); target.position.set(11,0,z*2); return target;
-  }), []);
   useFrame(() => {
     const on = useExperience.getState().headlightsOn;
     if (beams.current) beams.current.visible = on && (runtime.driving || runtime.chapter === 6) && !runtime.cabin;
-    if (lights.current) lights.current.visible = on;
   });
   return <>
-    <group ref={lights}>
-      {targets.map((target,i) => <group key={i}>
-        <primitive object={target}/>
-        <spotLight position={[2.28,0.67,i?0.68:-0.68]} target={target} color={color} intensity={6} distance={15} angle={0.23} penumbra={0.7} decay={2}/>
-      </group>)}
-    </group>
     <group ref={beams} visible={false}>
       {[-0.68,0.68].map(z => <mesh key={z} position={[5.2,0.025,z*1.5]} rotation={[-Math.PI/2,0,0]}>
         <planeGeometry args={[5.8,1.7]}/>

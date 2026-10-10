@@ -238,7 +238,7 @@ export function Counter({
 export function ChapterRail() {
   const phase = useExperience((s) => s.phase);
   const exploring = useExperience(s => s.exploreOpen);
-  if (phase === "configurator" || exploring) return null;
+  if (["configurator", "interior", "intelligence"].includes(phase) || exploring) return null;
   return (
     <nav
       aria-label="Chapters"
