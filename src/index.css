@@ -255,26 +255,6 @@ img {
 }
 
 /* ----------------------- AERION Intelligence ----------------------- */
-.ai-experience::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.18;
-  transition: background 0.8s ease, opacity 0.8s ease;
-}
-.ai-theme-warm::after {
-  background: radial-gradient(circle at 70% 65%, rgba(255, 122, 75, 0.55), transparent 46%);
-  opacity: 0.42;
-}
-.ai-theme-energy::after {
-  background: radial-gradient(circle at 76% 55%, rgba(117, 255, 168, 0.45), transparent 43%);
-  opacity: 0.32;
-}
-.ai-theme-vision::after {
-  background: linear-gradient(110deg, transparent 35%, rgba(95, 232, 255, 0.19), transparent 72%);
-  opacity: 0.42;
-}
 .ai-status-dot {
   background: #5fe8ff;
   box-shadow: 0 0 14px rgba(95, 232, 255, 0.85);
@@ -310,27 +290,6 @@ img {
   from { transform: scaleY(0.2); opacity: 0.45; }
   to { transform: scaleY(1); opacity: 1; }
 }
-.vision-target::before,
-.vision-target::after {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border-top: 1px solid rgba(95, 232, 255, 0.3);
-  border-bottom: 1px solid rgba(95, 232, 255, 0.3);
-}
-.vision-target {
-  animation: targetLock 1.8s ease-in-out infinite alternate;
-}
-@keyframes targetLock {
-  to { transform: scale(1.06); box-shadow: 0 0 22px rgba(95, 232, 255, 0.18); }
-}
-.radar-field {
-  border-radius: 50% 50% 0 0;
-  background: repeating-radial-gradient(ellipse at 50% 100%, transparent 0 18px, rgba(95, 232, 255, 0.12) 19px 20px);
-}
-.autonomous-drive-image {
-  animation: autonomousDrive 1.2s ease-out both;
-}
 .ai-ecosystem {margin-top:16px;max-width:520px;color:#d6e6ed;}
 .ai-ecosystem>p {font-size:13px;font-weight:600;margin-bottom:8px;}
 .ai-ecosystem nav {display:flex;flex-wrap:wrap;gap:8px;}
@@ -340,15 +299,9 @@ img {
 .ai-ecosystem a img {width:22px;height:22px;object-fit:contain;}
 .ai-ecosystem a:nth-child(3) img {filter:invert(1);}
 .ai-ecosystem small {display:block;margin-top:8px;max-width:48ch;font-size:12px;line-height:1.5;color:#bdced7;}
-.ai-experience>div:last-child {overflow:visible;}
-.ai-experience>div:last-child>* {flex-shrink:0;}
 @media (max-width:767px) {
   .ai-ecosystem {margin-top:12px;}
   .ai-ecosystem a {padding:6px 9px;}
-}
-@keyframes autonomousDrive {
-  from { transform: scale(1.01) translate3d(0, 0, 0); }
-  to { transform: scale(1.065) translate3d(-0.7%, -0.35%, 0); }
 }
 
 /* ----------------------------- loaders ------------------------------ */
@@ -570,7 +523,7 @@ header { background: #05090e; border-bottom: 1px solid #ffffff14; }
   .drive-controls.is-cabin { top:auto; bottom:12px; left:12px; right:auto; width:238px; max-height:21dvh; }
 }
 @media(prefers-reduced-motion:reduce) { .screen-voice-wave.is-active i { animation:none; height:14px; } }
-@media(max-width:767px){ .ai-experience { min-height:0; } .drive-panel {padding:14px;} .nav-reserve,.nav-audio-label {display:none;} }
+@media(max-width:767px){ .drive-panel {padding:14px;} .nav-reserve,.nav-audio-label {display:none;} }
 
 .configurator-panel{z-index:25;background:#f0efea!important;backdrop-filter:none!important;}
 .config-tabs button{min-height:44px;}
@@ -579,23 +532,6 @@ header { background: #05090e; border-bottom: 1px solid #ffffff14; }
 .drive-panel button:active { transform:translateY(1px); }
 #drive-settings { padding-top:4px; }
 
-/* AI controls have their own layout rather than floating over campaign images. */
-.story-chapter-flow {background:#03070b;scroll-margin-top:88px;}
-.ai-flow .ai-campaign-image {position:relative;display:block;width:100%;height:auto;max-height:560px;object-fit:cover;}
-.ai-flow .ai-content {height:auto;padding:48px clamp(20px,4vw,80px) 64px;gap:28px;max-width:1600px;margin-inline:auto;}
-.ai-flow .ai-content>div:first-child {flex-wrap:wrap;gap:32px;}
-.ai-flow .ai-content h2 {font-size:clamp(2.4rem,5vw,6rem);line-height:.96;}
-.ai-flow .ai-content .ai-hmi {min-width:0;}
-.ai-flow .ai-content .ai-hmi>div {background:#07131c;backdrop-filter:none;}
-.ai-flow::after {display:none;}
-.ai-sensor-image {position:relative;overflow:hidden;}
-@media(max-width:767px){
-  .ai-flow .ai-content {padding-top:32px;gap:24px;}
-  .ai-flow .ai-content>div:first-child {display:block;}
-  .ai-flow .ai-campaign-image {min-height:230px;object-fit:cover;}
-  .ai-hmi p {overflow-wrap:anywhere;}
-}
-
 @media(max-width:767px){
   .hero-letter {font-size:clamp(2.25rem,12vw,3.25rem);}
   .hero-title {max-width:calc(100% - 40px);}
@@ -603,3 +539,100 @@ header { background: #05090e; border-bottom: 1px solid #ffffff14; }
   #night .col-span-12 {min-width:0;}
   #night .col-span-12>div {min-width:0;overflow-wrap:anywhere;}
 }
+
+/* Campaign layouts: the image keeps its full native 16:9 frame at every size. */
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1); }
+.story-chapter-flow { background:#050b11;scroll-margin-top:24px;border-top:1px solid #29404b; }
+.campaign-section { --campaign-accent:#5fe8ff;--campaign-surface:#091923;max-width:1600px;margin-inline:auto;padding:48px clamp(20px,4vw,64px) 64px;color:#eff6fa; }
+.campaign-heading { display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:32px; }
+.campaign-heading h2 {font-weight:800;font-size:clamp(2.5rem,4.7vw,5.8rem);line-height:.96;letter-spacing:-.035em;text-wrap:balance;}
+.campaign-heading>div>p {margin-top:16px;color:#b9d1dd;font-size:14px;}
+.campaign-heading .ai-ecosystem {max-width:460px;margin-top:0;}
+.campaign-intro {max-width:420px;font-size:15px;line-height:1.7;color:#bdced9;}
+.campaign-layout {display:grid;grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);align-items:start;gap:clamp(28px,3vw,48px);}
+.campaign-layout>* {min-width:0;}
+.campaign-figure img {display:block;width:100%;height:auto;max-height:none;object-fit:contain;aspect-ratio:16/9;}
+.campaign-figure figcaption {padding-block:14px;font-size:13px;line-height:1.6;color:#bed2dc;}
+.cabin-features {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding-top:24px;border-top:1px solid #31505e;margin-top:12px;}
+.cabin-features span {font-size:18px;font-weight:600;}
+.cabin-features p {font-size:14px;line-height:1.6;color:#bfd0db;margin-top:8px;}
+.campaign-controls {display:flex;flex-direction:column;gap:20px;}
+.campaign-controls .voice-panel {margin-top:0;}
+.campaign-controls .voice-panel button {flex:1;font-size:14px;}
+.campaign-controls .voice-panel p {font-size:13px;color:#bed3df;}
+.campaign-cabin-link {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border-bottom:1px solid #315565;padding:10px 0;font-size:14px;text-align:left;color:#89e6f6;}
+.campaign-cabin-link span {font-size:22px;transition:transform 180ms var(--ease-out);}
+.campaign-commands {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.campaign-commands button,.campaign-sensor-button {min-height:46px;padding:10px 12px;border:1px solid #4a6b7c;font-size:13px;text-align:left;transition:background-color 180ms ease,border-color 180ms ease,color 180ms ease,transform 120ms var(--ease-out);}
+.campaign-commands button[aria-pressed=true],.campaign-sensor-button[aria-pressed=true] {background:#123541;color:#9cefff;border-color:#5fe8ff;}
+.campaign-commands button:active,.campaign-sensor-button:active {transform:scale(.98);}
+.campaign-hmi {padding:24px;background:var(--campaign-surface);border:1px solid #315365;transition:border-color 200ms ease;}
+.campaign-hmi[data-stage=listening],.campaign-hmi[data-stage=responding] {border-color:var(--campaign-accent);}
+.campaign-hmi-status {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-bottom:16px;border-bottom:1px solid #31505e;font-size:11px;letter-spacing:.08em;color:#bdced9;}
+.campaign-hmi-status>span:first-child {display:flex;align-items:center;gap:8px;color:#9de8f5;}
+.campaign-hmi-status i {display:block;width:7px;height:7px;border-radius:50%;}
+.campaign-waveform {display:flex;align-items:center;gap:4px;height:32px;margin-block:20px 12px;}
+.campaign-waveform span {animation:campaignVoice 2.8s var(--ease-in-out) infinite alternate;background:var(--campaign-accent);opacity:.55;}
+.campaign-waveform.is-listening span {animation:campaignVoice .72s var(--ease-in-out) infinite alternate;opacity:1;}
+.campaign-prompt {font-size:clamp(17px,1.6vw,22px);font-weight:700;line-height:1.4;margin-top:18px;text-wrap:balance;}
+.campaign-response {display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows 240ms var(--ease-out),opacity 200ms ease;}
+.campaign-response[data-ready=true] {grid-template-rows:1fr;opacity:1;}
+.campaign-response>div {overflow:hidden;min-height:0;}
+.campaign-response p {padding-top:16px;font-size:14px;line-height:1.7;color:#ccdfe8;}
+.campaign-telemetry {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;margin-top:20px;border-top:1px solid #31505e;}
+.campaign-telemetry>div {padding-block:12px;border-bottom:1px solid #31505e;min-width:0;}
+.campaign-telemetry dt {font-size:11px;letter-spacing:.08em;color:#b7ceda;}
+.campaign-telemetry dd {margin-top:6px;font-size:14px;font-weight:600;overflow-wrap:anywhere;}
+.campaign-effect {margin-top:16px;color:#99ebf8;font-size:12px;line-height:1.6;}
+.campaign-note {font-size:12px;line-height:1.7;color:#b2c9d6;max-width:65ch;}
+.campaign-system-facts {display:flex;justify-content:space-between;gap:16px;padding-block:16px;border-block:1px solid #31505e;font-size:12px;color:#b7ceda;}
+.campaign-system-facts strong {display:block;margin-top:6px;font-size:14px;font-weight:500;color:#eff6fa;}
+.sensor-preview {margin-top:12px;padding-top:20px;border-top:1px solid #31505e;}
+.sensor-preview-heading {display:flex;justify-content:space-between;font-size:13px;color:#bed5e1;}
+.sensor-preview-heading span:first-child {font-size:17px;color:#eff6fa;font-weight:600;}
+.sensor-preview svg {display:block;width:100%;height:auto;margin-block:16px;background:#091923;}
+.sensor-preview>p {font-size:12px;line-height:1.6;color:#bed5e1;}
+.sensor-actors {opacity:.4;transition:opacity 200ms ease;}
+.sensor-preview[data-active=true] .sensor-actors {opacity:1;}
+.sensor-scan {opacity:0;}
+.sensor-preview[data-active=true] .sensor-scan {animation:sensorSweep 3s linear infinite;}
+.sensor-preview[data-active=true] .sensor-lane {animation:sensorTravel 1.5s linear infinite;}
+.sensor-preview[data-active=true] .sensor-actor {animation:sensorTrack 2.4s var(--ease-in-out) infinite alternate;}
+.campaign-section[data-motion-visible=false] *, .campaign-section:not([data-motion-visible=true]) * {animation-play-state:paused!important;}
+@keyframes campaignVoice {from {transform:scaleY(.28);} to {transform:scaleY(.7);}}
+@keyframes sensorSweep {0% {transform:translateX(0);opacity:0;} 10% {opacity:.6;} 90% {opacity:.6;} 100% {transform:translateX(450px);opacity:0;}}
+@keyframes sensorTravel {to {transform:translateX(-38px);}}
+@keyframes sensorTrack {to {transform:translateX(-8px);}}
+@media(hover:hover) and (pointer:fine) {
+  .campaign-commands button:hover,.campaign-sensor-button:hover {background:#153746;border-color:#86dfed;}
+  .campaign-cabin-link:hover span {transform:translate(3px,-3px);}
+  .ai-ecosystem a {transition:background-color 180ms ease,border-color 180ms ease;}
+}
+.campaign-section button:focus-visible {outline:2px solid #5fe8ff;outline-offset:4px;}
+@media(max-width:999px) {
+  .campaign-layout {grid-template-columns:1fr;gap:32px;}
+  .campaign-controls {max-width:720px;width:100%;}
+  .campaign-heading {align-items:start;gap:24px;}
+  .campaign-heading .ai-ecosystem {max-width:360px;}
+}
+@media(max-width:639px) {
+  .campaign-section {padding:36px 20px 48px;}
+  .campaign-heading {display:block;margin-bottom:28px;}
+  .campaign-heading h2 {font-size:clamp(2.4rem,10.5vw,3.5rem);}
+  .campaign-heading .ai-ecosystem,.campaign-intro {margin-top:24px;}
+  .campaign-heading>div>p {font-size:13px;}
+  .cabin-features {gap:16px;}
+  .cabin-features span {font-size:15px;}
+  .cabin-features p {font-size:12px;}
+  .campaign-hmi {padding:20px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .campaign-section .campaign-waveform span,.campaign-section .sensor-scan,.campaign-section .sensor-lane,.campaign-section .sensor-actor {animation:none;transform:none;}
+  .campaign-response {transition:opacity 120ms ease;}
+  .campaign-cabin-link span {transition:none;}
+}
+
+.campaign-section.ai-theme-warm {--campaign-accent:#ffc59b;--campaign-surface:#231b17;}
+.campaign-section.ai-theme-energy {--campaign-accent:#b5f0cb;--campaign-surface:#0b2119;}
+
+.campaign-section [data-motion-loop]:not([data-loop-visible=true]), .campaign-section [data-motion-loop]:not([data-loop-visible=true]) * {animation-play-state:paused!important;}
