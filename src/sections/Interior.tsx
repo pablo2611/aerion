@@ -26,19 +26,17 @@ export default function Interior() {
   const responded = aiStage === "responding";
 
   return (
-    <SectionShell id="interior" chapter="interior" height={CHAPTERS[4].height}>
-      <div className={`ai-experience relative h-full w-full overflow-hidden ai-theme-${config.uiTheme}`}>
+    <SectionShell id="interior" chapter="interior" height={CHAPTERS[4].height} flow>
+      <div className={`ai-experience ai-flow relative w-full ai-theme-${config.uiTheme}`}>
         <img
           src={`${import.meta.env.BASE_URL}images/aerion-cabin-1280.webp`}
           srcSet={`${import.meta.env.BASE_URL}images/aerion-cabin-640.webp 640w, ${import.meta.env.BASE_URL}images/aerion-cabin-1280.webp 1280w`}
           sizes="100vw" width={1280} height={720} loading="lazy" decoding="async"
           alt="A driver inside AERION ONE speaking with the integrated AERION intelligence"
-          className="absolute inset-0 h-full w-full object-cover object-[40%_center] sm:object-center"
+          className="ai-campaign-image object-[40%_center] sm:object-center"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,6,10,.82)_0%,rgba(3,6,10,.25)_48%,rgba(3,6,10,.72)_100%)] sm:bg-[linear-gradient(90deg,rgba(3,6,10,.76)_0%,rgba(3,6,10,.08)_48%,rgba(3,6,10,.76)_100%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#03060a]/95 via-transparent to-[#03060a]/50" />
 
-        <div className="relative z-10 flex h-full flex-col px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(5.5rem,env(safe-area-inset-top))] text-white sm:px-10 sm:pb-8 sm:pt-24">
+        <div className="ai-content relative flex flex-col text-white">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono-tech text-[12px] tracking-[0.34em] text-ion">05 / AERION INTELLIGENCE</p>
@@ -58,7 +56,7 @@ export default function Interior() {
             Entrar a la cabina 3D · sin volante
           </button>
           {/* The HMI is a functional interaction surface, not a detached marketing card. */}
-          <div className="mt-auto grid items-end gap-4 lg:grid-cols-12 lg:gap-8">
+          <div className="grid items-start gap-4 lg:grid-cols-12 lg:gap-8">
             <div className="hidden lg:col-span-4 lg:block">
               <p className="max-w-xs text-[13px] leading-relaxed text-white/65">
                 Try a guided command. This local concept changes the visual cabin settings and speaks a response; route and sensor values are simulated.

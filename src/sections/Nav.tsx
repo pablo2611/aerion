@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NAV_LINKS, CHAPTERS } from "../data/content";
 import { useExperience } from "../store";
 import { sonic } from "../audio";
@@ -58,6 +59,13 @@ export default function Nav() {
   const menuOpen = useExperience((s) => s.menuOpen);
   const setMenu = useExperience((s) => s.setMenu);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setMenu(false); };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [menuOpen, setMenu]);
+
   if (exploring) return null;
 
   const go = (id: string) => {
@@ -68,9 +76,9 @@ export default function Nav() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40">
-        <div className="flex items-center justify-between px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-10 sm:py-6">
+        <div className="flex items-center justify-between gap-6 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-10 sm:py-6">
           <Logo />
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex" aria-label="Primary">
+          <nav className="hidden items-center justify-center gap-5 xl:flex" aria-label="Primary">
             {NAV_LINKS.map((l) => (
               <button
                 key={l.id}
@@ -102,7 +110,7 @@ export default function Nav() {
             </Magnetic>
             <button
               onClick={() => setMenu(!menuOpen)}
-              className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 border border-line lg:hidden"
+              className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 border border-line xl:hidden"
               aria-expanded={menuOpen}
               aria-label={menuOpen ? "Close menu" : "Open menu"}
             >
@@ -115,13 +123,14 @@ export default function Nav() {
 
       {/* mobile menu */}
       <div
-        className={`fixed inset-0 z-[45] flex flex-col justify-between bg-[#04060a]/[0.985] px-7 pb-10 pt-28 transition-all duration-500 lg:hidden ${
+        className={`fixed inset-0 z-[45] flex flex-col justify-between gap-8 overflow-y-auto bg-[#04060a]/[0.985] px-7 pb-10 pt-28 transition-all duration-500 xl:hidden ${
           menuOpen ? "visible opacity-100" : "invisible opacity-0"
         }`}
         aria-hidden={!menuOpen}
       >
+        <button onClick={() => setMenu(false)} tabIndex={menuOpen ? 0 : -1} className="absolute right-5 top-5 min-h-11 border border-white/30 px-4" aria-label="Cerrar menú">Cerrar</button>
         <nav className="flex flex-col gap-1" aria-label="Mobile">
-          {[...NAV_LINKS, { id: "finale", label: "Reserve" }].map((l, i) => (
+          {CHAPTERS.map((l, i) => (
             <button
               key={l.id}
               onClick={() => go(l.id)}
@@ -134,7 +143,7 @@ export default function Nav() {
               <span className="font-mono-tech text-[12px] tracking-[0.3em] text-ion/70">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="font-display text-[9vw] font-extrabold leading-[1.05] tracking-tight">
+              <span className="font-display text-[clamp(1.25rem,5vw,2.25rem)] font-extrabold leading-[1.05] tracking-tight">
                 {l.label.toUpperCase()}
               </span>
             </button>

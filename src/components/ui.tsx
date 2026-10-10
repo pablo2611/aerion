@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { CHAPTERS } from "../data/content";
-import { useExperience } from "../store";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,61 +8,6 @@ const finePointer = () =>
   typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const prefersReduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-/* ----------------------------- cursor ------------------------------ */
-
-export function Cursor() {
-  const dot = useRef<HTMLDivElement>(null);
-  const ring = useRef<HTMLDivElement>(null);
-  const label = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (!finePointer() || prefersReduced()) return;
-    document.documentElement.classList.add("aerion-cursor");
-    let x = innerWidth / 2, y = innerHeight / 2;
-    let s = 1, ts = 1, visible = false, raf = 0;
-    const onMove = (e: MouseEvent) => {
-      x = e.clientX; y = e.clientY; visible = true;
-      const t = (e.target as HTMLElement)?.closest?.("[data-cursor]") as HTMLElement | null;
-      ts = t ? 1.12 : 1;
-      if (label.current) label.current.textContent = t?.dataset.cursorLabel ?? "";
-    };
-    const onLeave = () => (visible = false);
-    const loop = () => {
-      raf = requestAnimationFrame(loop);
-      s += (ts - s) * 0.14;
-      const op = visible ? 1 : 0;
-      if (dot.current)
-        dot.current.style.transform = `translate3d(${x - 3}px, ${y - 3}px, 0)`;
-      if (ring.current) {
-        ring.current.style.transform = `translate3d(${x - 3}px, ${y - 2}px, 0) scale(${s})`;
-        ring.current.style.opacity = String(op);
-      }
-      if (dot.current) dot.current.style.opacity = String(op);
-    };
-    loop();
-    window.addEventListener("mousemove", onMove, { passive: true });
-    document.documentElement.addEventListener("mouseleave", onLeave);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove", onMove);
-      document.documentElement.removeEventListener("mouseleave", onLeave);
-      document.documentElement.classList.remove("aerion-cursor");
-    };
-  }, []);
-
-  return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[70] hidden md:block">
-      <div ref={dot} className="cursor-dot" />
-      <div ref={ring} className="cursor-ring">
-        <svg viewBox="0 0 24 28" width="24" height="28" fill="none">
-          <path d="M3 2v20l5.8-5 4.3 9 3.8-1.9-4.2-8.6H21L3 2Z" fill="#091c29" stroke="#9be9ec" strokeWidth="1.5" strokeLinejoin="round" />
-        </svg>
-        <span ref={label} className="cursor-label" />
-      </div>
-    </div>
-  );
-}
 
 /* ---------------------------- magnetic ----------------------------- */
 
@@ -233,48 +176,6 @@ export function Counter({
   );
 }
 
-/* -------------------------- chapter rail --------------------------- */
-
-export function ChapterRail() {
-  const phase = useExperience((s) => s.phase);
-  const exploring = useExperience(s => s.exploreOpen);
-  if (["configurator", "interior", "intelligence"].includes(phase) || exploring) return null;
-  return (
-    <nav
-      aria-label="Chapters"
-      className="fixed right-5 xl:right-8 top-1/2 z-30 hidden -translate-y-1/2 flex-col items-end gap-2.5 lg:flex"
-    >
-      {CHAPTERS.map((c) => {
-        const active = phase === c.id;
-        return (
-          <button
-            key={c.id}
-            onClick={() =>
-              document.getElementById(c.id)?.scrollIntoView({ behavior: prefersReduced() ? "auto" : "smooth" })
-            }
-            className={`group flex items-center gap-2.5 py-0.5 text-right transition-all duration-500 ${
-              active ? "opacity-100" : "opacity-35 hover:opacity-70"
-            }`}
-            aria-current={active ? "true" : undefined}
-            data-cursor
-          >
-            <span
-              className={`font-mono-tech text-[12px] tracking-[0.25em] uppercase transition-all duration-500 ${
-                active ? "translate-x-0" : "translate-x-1.5"
-              }`}
-            >
-              {c.label}
-            </span>
-            <span
-              className={`block h-px transition-all duration-500 ${active ? "w-6 bg-ion" : "w-3 bg-current"}`}
-            />
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
 /* ---------------------------- hotspots ----------------------------- */
 
 export function Hotspot({
@@ -326,16 +227,18 @@ export function SectionShell({
   height,
   children,
   style,
+  flow = false,
 }: {
   id: string;
   chapter: string;
   height: string;
   children: ReactNode;
   style?: CSSProperties;
+  flow?: boolean;
 }) {
   return (
-    <section id={id} data-chapter={chapter} className="story-chapter relative" style={{ "--chapter-height": height, "--chapter-mobile-height": `${Math.max(135, parseFloat(height) * 0.82)}svh`, ...style } as CSSProperties} aria-label={chapter}>
-      <div className="sticky top-0 h-[100dvh] min-h-[560px] w-full overflow-hidden">{children}</div>
+    <section id={id} data-chapter={chapter} className={flow ? "story-chapter-flow relative" : "story-chapter relative"} style={flow ? style : { "--chapter-height": height, "--chapter-mobile-height": `${Math.max(135, parseFloat(height) * 0.82)}svh`, ...style } as CSSProperties} aria-label={chapter}>
+      <div className={flow ? "w-full" : "sticky top-0 h-[100dvh] min-h-[560px] w-full overflow-hidden"}>{children}</div>
     </section>
   );
 }

@@ -1,9 +1,12 @@
-import { BRAND } from "../data/content";
+import { BRAND, CHAPTERS } from "../data/content";
 import { AERION_MODEL, MODEL_CREDITS } from "../data/model";
 
 export default function Footer() {
   return (
     <footer className="relative z-10 border-t border-white/10 bg-[#030408] px-5 py-14 sm:px-10">
+      <nav aria-label="Chapters" className="mb-12 flex flex-wrap gap-x-6 gap-y-3 border-b border-white/15 pb-8">
+        {CHAPTERS.map(chapter => <a key={chapter.id} href={`#${chapter.id}`} className="py-2 text-sm text-white/80 hover:text-ion">{chapter.label}</a>)}
+      </nav>
       <div className="grid gap-10 md:grid-cols-12">
         <div className="md:col-span-5">
           <p className="font-display text-2xl font-extrabold tracking-[0.3em]">AERION</p>

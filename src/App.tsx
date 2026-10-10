@@ -17,7 +17,6 @@ import Configurator from "./sections/Configurator";
 import Finale from "./sections/Finale";
 import Footer from "./sections/Footer";
 import ExploreVehicle from "./sections/ExploreVehicle";
-import { Cursor, ChapterRail } from "./components/ui";
 import { runtime, useExperience, detectQuality } from "./store";
 import { CHAPTERS } from "./data/content";
 import { AERION_MODEL } from "./data/model";
@@ -201,9 +200,7 @@ export default function App() {
         <Configurator />
         <Finale />
       </main>
-      <ChapterRail />
       <Footer />
-      <Cursor />
     </>
   );
 }

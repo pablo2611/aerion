@@ -13,18 +13,17 @@ export default function Intelligence() {
   const ready = active && stage === "responding";
 
   return (
-    <SectionShell id="intelligence" chapter="intelligence" height={CHAPTERS[5].height}>
-      <div className="relative h-full w-full overflow-hidden bg-[#03070b] text-white">
+    <SectionShell id="intelligence" chapter="intelligence" height={CHAPTERS[5].height} flow>
+      <div className="ai-flow relative w-full bg-[#03070b] text-white">
+        <div className="ai-sensor-image">
         <img
           src={`${import.meta.env.BASE_URL}images/aerion-road-ai-1280.webp`}
           srcSet={`${import.meta.env.BASE_URL}images/aerion-road-ai-640.webp 640w, ${import.meta.env.BASE_URL}images/aerion-road-ai-1280.webp 1280w`}
           sizes="100vw" width={1280} height={720} decoding="async"
           alt="Over the shoulder view of the AERION ONE driver and cockpit with autonomous assistance active"
-          className={`absolute inset-0 h-full w-full object-cover object-[55%_center] ${ready ? "autonomous-drive-image" : ""}`}
+          className={`ai-campaign-image object-[55%_center] ${ready ? "autonomous-drive-image" : ""}`}
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,5,8,.82),rgba(2,5,8,.12)_55%,rgba(2,5,8,.65))]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020508]/90 via-transparent to-[#020508]/45" />
 
         {/* Sensor fusion appears only after the user executes the AERION command. */}
         <div className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`} aria-hidden="true">
@@ -36,7 +35,8 @@ export default function Intelligence() {
           <div className="radar-field absolute bottom-[17%] left-1/2 h-32 w-64 -translate-x-1/2 border-t border-ion/30" />
         </div>
 
-        <div className="relative z-10 flex h-full flex-col justify-between px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(5.5rem,env(safe-area-inset-top))] sm:px-10 sm:pb-8 sm:pt-24">
+        </div>
+        <div className="ai-content relative flex flex-col">
           <div className="flex items-start justify-between gap-5">
             <div>
               <p className="font-mono-tech text-[12px] tracking-[0.34em] text-ion">06 / NEURAL PATH</p>

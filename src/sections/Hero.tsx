@@ -1,11 +1,14 @@
+import { sonic } from "../audio";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
-import { useExperience } from "../store";
+import { runtime, useExperience } from "../store";
 import { BRAND } from "../data/content";
 import { Magnetic } from "../components/ui";
 import { prefersReduced } from "../utils/motion";
 
 export default function Hero() {
+  const ready = useExperience(s => s.modelReady);
+  const enterRoad = () => { runtime.driving = true; runtime.peakSpeed = 0; sonic.setDrivingMix(true); useExperience.setState({driving:true,exploreOpen:false}); if (!useExperience.getState().audioOn) void sonic.toggle().then(audioOn => useExperience.setState({audioOn})); };
   const booted = useExperience((s) => s.booted);
   const setExplore = useExperience((s) => s.setExplore);
   const root = useRef<HTMLDivElement>(null);
@@ -63,7 +66,7 @@ export default function Hero() {
         </div>
 
         {/* intro + CTA */}
-        <div className="absolute inset-x-5 bottom-[max(1.5rem,env(safe-area-inset-bottom))] flex items-end justify-between gap-6 sm:inset-x-10 sm:bottom-10">
+        <div className="absolute inset-x-5 bottom-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-wrap items-end justify-between gap-4 sm:inset-x-10 sm:bottom-10">
           <div className="hidden max-w-xs md:block">
             <p className="hero-meta text-[13px] font-normal leading-relaxed opacity-75">
               {BRAND.intro}
@@ -86,6 +89,7 @@ export default function Hero() {
               Configure yours
             </Magnetic>
           </div>
+          <button disabled={!ready} onClick={enterRoad} className="hero-meta pointer-events-auto btn-ghost shrink-0">Ver en carretera</button>
           <div className="hero-meta hidden flex-col items-end gap-1.5 font-mono-tech text-[12px] tracking-[0.3em] opacity-60 xl:flex" aria-hidden="true">
             <span>1,340 HP — TRIAX VORTECH</span>
             <span>705 KM — IONVAULT 120</span>

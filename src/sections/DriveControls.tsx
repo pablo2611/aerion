@@ -7,11 +7,9 @@ import { changeVehicleLane, startVehicleNitro } from '../vehicleActions';
 export default function DriveControls() {
   const exploring = useExperience(s => s.exploreOpen);
   const driving = useExperience(s => s.driving);
-  const ready = useExperience(s => s.modelReady);
   const paint = useExperience(s => s.config.paint);
   const audio = useExperience(s => s.audioOn);
   const error = useExperience(s => s.audioError);
-  const phase = useExperience(s => s.phase);
   const cabin = useExperience(s => s.cabinView);
   const engineView=useExperience(s=>s.engineView);
   const environmentReady=useExperience(s=>s.environmentReady);
@@ -87,9 +85,7 @@ export default function DriveControls() {
   const changeLane=(direction:'left'|'right')=>setManeuver(changeVehicleLane(direction));
   const view = (yaw: number) => { runtime.nitroUntil=0;useExperience.setState({cabinView:false,engineView:false}); driveCamera.targetYaw=yaw; driveCamera.targetPitch=0.2; driveCamera.targetRadius=9.5; };
   const inspectEngine=()=>{runtime.speed=0;runtime.nitroUntil=0;useExperience.setState({engineView:!engineView,cabinView:false,drivingPaused:true,autonomous:false});if(!audio)void toggleMotor();};
-  const enterRoad=()=>{runtime.driving=true;runtime.peakSpeed=0;sonic.setDrivingMix(true);useExperience.setState({driving:true,exploreOpen:false});if(!audio)void toggleMotor();};
-  if (exploring || (!driving && ["configurator", "interior", "intelligence"].includes(phase))) return null;
-  if (!driving) return <button disabled={!ready} className="fixed bottom-5 right-5 z-30 btn-solid" onClick={enterRoad}>Ver en carretera</button>;
+  if (exploring || !driving) return null;
 
   return <div className="fixed inset-0 z-[60] pointer-events-none text-white" role="region" aria-label="Experiencia en carretera">
     <div className="drive-orbit absolute inset-0 pointer-events-auto touch-none"

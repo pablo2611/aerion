@@ -131,44 +131,6 @@ img {
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ------------------------------- cursor ----------------------------- */
-html.aerion-cursor,
-html.aerion-cursor * {
-  cursor: none !important;
-}
-.cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: #5fe8ff;
-  opacity: 0;
-  mix-blend-mode: screen;
-}
-.cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(95, 232, 255, 0.65);
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  mix-blend-mode: screen;
-}
-.cursor-label {
-  font-family: var(--font-mono-tech);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  color: #5fe8ff;
-  white-space: nowrap;
-}
-
 /* ------------------------------ overlays ---------------------------- */
 .noise-overlay {
   position: fixed;
@@ -378,7 +340,7 @@ html.aerion-cursor * {
 .ai-ecosystem a img {width:22px;height:22px;object-fit:contain;}
 .ai-ecosystem a:nth-child(3) img {filter:invert(1);}
 .ai-ecosystem small {display:block;margin-top:8px;max-width:48ch;font-size:12px;line-height:1.5;color:#bdced7;}
-.ai-experience>div:last-child {overflow-y:auto;overscroll-behavior:contain;}
+.ai-experience>div:last-child {overflow:visible;}
 .ai-experience>div:last-child>* {flex-shrink:0;}
 @media (max-width:767px) {
   .ai-ecosystem {margin-top:12px;}
@@ -556,7 +518,7 @@ details summary::-webkit-details-marker {
   }
 }
 
-header { background: linear-gradient(var(--bg-inv), transparent); }
+header { background: #05090e; border-bottom: 1px solid #ffffff14; }
 .drive-panel { color:#f4f7fa; background:#08121de8; padding:20px; border:1px solid #ffffff26; max-width:420px; }
 .drive-panel button,.voice-panel button { min-height:44px; padding:8px 14px; border:1px solid #5fe8ff66; }
 .drive-panel input { accent-color:#5fe8ff; width:100%; }
@@ -610,13 +572,34 @@ header { background: linear-gradient(var(--bg-inv), transparent); }
 @media(prefers-reduced-motion:reduce) { .screen-voice-wave.is-active i { animation:none; height:14px; } }
 @media(max-width:767px){ .ai-experience { min-height:0; } .drive-panel {padding:14px;} .nav-reserve,.nav-audio-label {display:none;} }
 
-.cursor-ring{width:24px;height:28px;border:0;border-radius:0;mix-blend-mode:normal;filter:drop-shadow(0 3px 4px #0008);}
-.cursor-dot{display:none;}
-.cursor-label{position:absolute;top:34px;left:50%;transform:translateX(-50%);padding:3px 6px;background:#07111c;color:#d5f8ff;font-size:10px;letter-spacing:.08em;}
-.cursor-label:empty{display:none;}
 .configurator-panel{z-index:25;background:#f0efea!important;backdrop-filter:none!important;}
 .config-tabs button{min-height:44px;}
 .config-feedback{max-width:65%;text-align:right;letter-spacing:.04em!important;}
 .drive-panel select { background:#102531; color:#f4f7fa; border:1px solid #5fe8ff66; min-height:44px; padding:8px; border-radius:0; }
 .drive-panel button:active { transform:translateY(1px); }
 #drive-settings { padding-top:4px; }
+
+/* AI controls have their own layout rather than floating over campaign images. */
+.story-chapter-flow {background:#03070b;scroll-margin-top:88px;}
+.ai-flow .ai-campaign-image {position:relative;display:block;width:100%;height:auto;max-height:560px;object-fit:cover;}
+.ai-flow .ai-content {height:auto;padding:48px clamp(20px,4vw,80px) 64px;gap:28px;max-width:1600px;margin-inline:auto;}
+.ai-flow .ai-content>div:first-child {flex-wrap:wrap;gap:32px;}
+.ai-flow .ai-content h2 {font-size:clamp(2.4rem,5vw,6rem);line-height:.96;}
+.ai-flow .ai-content .ai-hmi {min-width:0;}
+.ai-flow .ai-content .ai-hmi>div {background:#07131c;backdrop-filter:none;}
+.ai-flow::after {display:none;}
+.ai-sensor-image {position:relative;overflow:hidden;}
+@media(max-width:767px){
+  .ai-flow .ai-content {padding-top:32px;gap:24px;}
+  .ai-flow .ai-content>div:first-child {display:block;}
+  .ai-flow .ai-campaign-image {min-height:230px;object-fit:cover;}
+  .ai-hmi p {overflow-wrap:anywhere;}
+}
+
+@media(max-width:767px){
+  .hero-letter {font-size:clamp(2.25rem,12vw,3.25rem);}
+  .hero-title {max-width:calc(100% - 40px);}
+  .hero-title .hero-meta {letter-spacing:.16em;gap:8px;font-size:10px;}
+  #night .col-span-12 {min-width:0;}
+  #night .col-span-12>div {min-width:0;overflow-wrap:anywhere;}
+}
